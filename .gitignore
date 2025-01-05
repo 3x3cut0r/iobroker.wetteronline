@@ -1,6 +1,11 @@
 # Created by https://www.toptal.com/developers/gitignore/api/python,node,nextjs,linux,macos,c,c++,xcode,react,android,yarn,cmake
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,node,nextjs,linux,macos,c,c++,xcode,react,android,yarn,cmake
 
+### Project specific ###
+.chatgpt/prompt.txt
+.dev/
+.dev-server/
+
 ### Android ###
 # Gradle files
 .gradle/
@@ -364,7 +369,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/
 lib64/
 parts/
 sdist/
