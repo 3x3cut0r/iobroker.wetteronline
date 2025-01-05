@@ -1,0 +1,18 @@
+{
+    "current": "Текущий",
+    "city": "Город",
+    "forecast": "Прогноз",
+    "day0": "Сегодня",
+    "day1": "Завтра",
+    "day2": "Через 2 дня",
+    "day3": "Через 3 дня",
+    "precipitation": "Вероятность осадков",
+    "sun": "Солнечные часы",
+    "sunrise": "Восход солнца",
+    "sunset": "Закат солнца",
+    "temperature": "Температура",
+    "temperature_max": "Максимальная температура",
+    "temperature_min": "Минимальная температура",
+    "url": "URL",
+    "wetteronline adapter settings": "Настройки адаптера для wetteronline"
+}

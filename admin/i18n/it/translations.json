@@ -1,0 +1,18 @@
+{
+    "current": "Attuale",
+    "city": "Città",
+    "forecast": "Previsione",
+    "day0": "Oggi",
+    "day1": "Domani",
+    "day2": "Tra 2 giorni",
+    "day3": "Tra 3 giorni",
+    "precipitation": "Probabilità di precipitazioni",
+    "sun": "Ore di sole",
+    "sunrise": "Alba",
+    "sunset": "Tramonto",
+    "temperature": "Temperatura",
+    "temperature_max": "Temperatura massima",
+    "temperature_min": "Temperatura minima",
+    "url": "URL",
+    "wetteronline adapter settings": "Impostazioni dell'adattatore per wetteronline"
+}

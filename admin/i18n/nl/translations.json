@@ -1,0 +1,18 @@
+{
+    "current": "Huidig",
+    "city": "Stad",
+    "forecast": "Voorspelling",
+    "day0": "Vandaag",
+    "day1": "Morgen",
+    "day2": "Over 2 dagen",
+    "day3": "Over 3 dagen",
+    "precipitation": "Kans op neerslag",
+    "sun": "Zonneschijn uren",
+    "sunrise": "Zonsopgang",
+    "sunset": "Zonsondergang",
+    "temperature": "Temperatuur",
+    "temperature_max": "Maximale temperatuur",
+    "temperature_min": "Minimale temperatuur",
+    "url": "URL",
+    "wetteronline adapter settings": "Adapterinstellingen voor wetteronline"
+}

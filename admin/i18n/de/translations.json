@@ -1,0 +1,18 @@
+{
+    "current": "Aktuell",
+    "city": "Stadt",
+    "forecast": "Vorhersage",
+    "day0": "Heute",
+    "day1": "Morgen",
+    "day2": "In 2 Tagen",
+    "day3": "In 3 Tagen",
+    "precipitation": "Niederschlagswahrscheinlichkeit",
+    "sun": "Sonnenstunden",
+    "sunrise": "Sonnenaufgang",
+    "sunset": "Sonnenuntergang",
+    "temperature": "Temperatur",
+    "temperature_max": "Maximale Temperatur",
+    "temperature_min": "Minimale Temperatur",
+    "url": "URL",
+    "wetteronline adapter settings": "Adaptereinstellungen für wetteronline"
+}

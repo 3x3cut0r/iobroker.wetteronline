@@ -1,0 +1,18 @@
+{
+    "current": "Current",
+    "city": "City",
+    "forecast": "Forecast",
+    "day0": "Today",
+    "day1": "Tomorrow",
+    "day2": "In 2 days",
+    "day3": "In 3 days",
+    "precipitation": "Probability of precipitation",
+    "sun": "Sun hours",
+    "sunrise": "Sunrise",
+    "sunset": "Sunset",
+    "temperature": "Temperature",
+    "temperature_max": "Maximum temperature",
+    "temperature_min": "Minimum temperature",
+    "url": "URL",
+    "wetteronline adapter settings": "Adapter settings for wetteronline"
+}

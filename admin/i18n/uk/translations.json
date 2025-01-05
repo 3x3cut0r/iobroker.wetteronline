@@ -1,0 +1,18 @@
+{
+    "current": "Поточний",
+    "city": "Місто",
+    "forecast": "Прогноз",
+    "day0": "Сьогодні",
+    "day1": "Завтра",
+    "day2": "Через 2 дні",
+    "day3": "Через 3 дні",
+    "precipitation": "Ймовірність опадів",
+    "sun": "Сонячні години",
+    "sunrise": "Схід сонця",
+    "sunset": "Захід сонця",
+    "temperature": "Температура",
+    "temperature_max": "Максимальна температура",
+    "temperature_min": "Мінімальна температура",
+    "url": "URL",
+    "wetteronline adapter settings": "Налаштування адаптера для wetteronline"
+}

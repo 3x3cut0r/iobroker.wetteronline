@@ -1,0 +1,18 @@
+{
+    "current": "当前",
+    "city": "城市",
+    "forecast": "预测",
+    "day0": "今天",
+    "day1": "明天",
+    "day2": "2天后",
+    "day3": "3天后",
+    "precipitation": "降水概率",
+    "sun": "日照时长",
+    "sunrise": "日出",
+    "sunset": "日落",
+    "temperature": "温度",
+    "temperature_max": "最高温度",
+    "temperature_min": "最低温度",
+    "url": "URL",
+    "wetteronline adapter settings": "wetteronline适配器设置"
+}
