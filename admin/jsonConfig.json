@@ -1,0 +1,11 @@
+{
+    "i18n": true,
+    "type": "panel",
+    "items": {
+        "url": {
+            "type": "text",
+            "label": "url",
+            "newLine": true
+        }
+    }
+}

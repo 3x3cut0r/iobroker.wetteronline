@@ -1,0 +1,83 @@
+{
+    "common": {
+        "name": "wetteronline",
+        "version": "1.0.0",
+        "news": {
+            "1.0.0": {
+                "en": "initial release",
+                "de": "Erstveröffentlichung",
+                "ru": "Начальная версия",
+                "pt": "lançamento inicial",
+                "nl": "Eerste uitgave",
+                "fr": "Première version",
+                "it": "Versione iniziale",
+                "es": "Versión inicial",
+                "pl": "Pierwsze wydanie",
+                "uk": "Початкова версія",
+                "zh-cn": "首次出版"
+            }
+        },
+        "titleLang": {
+            "en": "wetteronline",
+            "de": "wetteronline",
+            "ru": "мокрыйонлайн",
+            "pt": "molhado online",
+            "nl": "wetteronline",
+            "fr": "plus humideen ligne",
+            "it": "wetteronline",
+            "es": "mojado en línea",
+            "pl": "wetteronline",
+            "uk": "wetteronline",
+            "zh-cn": "湿在线"
+        },
+        "desc": {
+            "en": "Weather forecast from wetteronline.de",
+            "de": "Wettervorhersage von wetteronline.de",
+            "ru": "Прогноз погоды с wetteronline.de",
+            "pt": "Previsão do tempo de wetteronline.de",
+            "nl": "Weersvoorspelling van wetteronline.de",
+            "fr": "Prévisions météo de wetteronline.de",
+            "it": "Previsioni meteo da wetteronline.de",
+            "es": "Pronóstico del tiempo de wetteronline.de",
+            "pl": "Prognoza pogody z wetteronline.de",
+            "uk": "Прогноз погоди з wetteronline.de",
+            "zh-cn": "来自 wetteronline.de 的天气预报"
+        },
+        "authors": ["3x3cut0r <julianreith@gmx.de>"],
+        "keywords": ["weather", "wetter", "sun"],
+        "licenseInformation": {
+            "type": "free",
+            "license": "MIT"
+        },
+        "platform": "Javascript/Node.js",
+        "icon": "wetteronline.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/3x3cut0r/ioBroker.wetteronline/main/admin/wetteronline.png",
+        "readme": "https://github.com/3x3cut0r/ioBroker.wetteronline/blob/main/README.md",
+        "loglevel": "info",
+        "tier": 3,
+        "mode": "daemon",
+        "type": "weather",
+        "compact": true,
+        "connectionType": "cloud",
+        "dataSource": "poll",
+        "adminUI": {
+            "config": "json"
+        },
+        "dependencies": [
+            {
+                "js-controller": ">=6.0.11"
+            }
+        ],
+        "globalDependencies": [
+            {
+                "admin": ">=7.0.23"
+            }
+        ]
+    },
+    "native": {
+        "url": "https://www.wetteronline.de/wetter/berlin"
+    },
+    "objects": [],
+    "instanceObjects": []
+}
