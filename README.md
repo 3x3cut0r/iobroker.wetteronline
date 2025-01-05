@@ -30,6 +30,14 @@ Provide URL in this format: `https://www.wetteronline.de/wetter/<city>`
 
 - Initial release
 
+## Terms of Use
+
+Please note that this adapter retrieves the weather data from [wetteronline.de](https://www.wetteronline.de).  
+This data is subject to the [terms and conditions](https://www.wetteronline.de/agb), the [legal notice](https://www.wetteronline.de/impressum) and the [privacy policy](https://www.wetteronline.de/datenschutz?memberdisplay=false) of wetteronline.de.  
+The automated retrieval or further use of the data may be subject to restrictions that you must check and comply with yourself.
+
+The MIT license below refers exclusively to the source code of this adapter. It does not cover the content provided by wetteronline.de or its further use.
+
 ## License
 
 MIT License
