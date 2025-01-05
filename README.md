@@ -26,7 +26,7 @@ Provide URL in this format: `https://www.wetteronline.de/wetter/<city>`
     ### **WORK IN PROGRESS**
 -->
 
-### **WORK IN PROGRESS**
+### v1.0.0 (2025-01-05)
 
 - Initial release
 
