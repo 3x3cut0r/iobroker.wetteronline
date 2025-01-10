@@ -2,7 +2,9 @@
 
 const axios = require("axios");
 const cheerio = require("cheerio");
-const { createObject } = require("./createObject");
+const he = require("he");
+const { createOrUpdateObject } = require("./createOrUpdateObject");
+const { getTranslation } = require("./getTranslation");
 
 /**
  * Fetches the content of a web page from the specified url.
@@ -12,6 +14,33 @@ const { createObject } = require("./createObject");
 async function fetchWebPage(url) {
     const response = await axios.get(url);
     return response.data;
+}
+
+/**
+ * Converts specific values ("-999", undefined, null, or empty string) to 0 or null.
+ * @param {number|string|null} value - The value to convert.
+ * @returns {number|string|null} - 0 if the value is "-999", undefined, null, or empty string; otherwise, the integer value.
+ */
+function convertEmpty(value, returnNull = false) {
+    if (value === undefined || value === null) {
+        return returnNull ? null : 0;
+    }
+    if (typeof value === "number" && value === -999) {
+        return returnNull ? null : 0;
+    }
+    if (typeof value === "string" && (value.trim() === "-999" || value.trim() === "")) {
+        return returnNull ? null : 0;
+    }
+    return value;
+}
+
+/**
+ * Decodes HTML entities in a string.
+ * @param {string} htmlString - The HTML string to decode.
+ * @returns {string} - The decoded HTML string.
+ */
+function decodeHtmlEntities(htmlString) {
+    return he.decode(htmlString);
 }
 
 /**
@@ -26,7 +55,7 @@ async function fetchCity(adapter, $) {
     const value = cityMatch ? cityMatch[1].trim() : null;
 
     // Create the object
-    await createObject(adapter, "city", value);
+    await createOrUpdateObject(adapter, "city", value);
 }
 
 /**
@@ -50,7 +79,7 @@ async function fetchTemperature(adapter, $) {
     };
 
     // Create the object
-    await createObject(adapter, "forecast.current.temperature", value, options);
+    await createOrUpdateObject(adapter, "forecast.current.temperature", value, options);
 }
 
 /**
@@ -75,7 +104,7 @@ async function fetchSunrise(adapter, $) {
     };
 
     // Create the object
-    await createObject(adapter, "forecast.current.sunrise", value, options);
+    await createOrUpdateObject(adapter, "forecast.current.sunrise", value, options);
 }
 
 /**
@@ -100,7 +129,7 @@ async function fetchSunset(adapter, $) {
     };
 
     // Create the object
-    await createObject(adapter, "forecast.current.sunset", value, options);
+    await createOrUpdateObject(adapter, "forecast.current.sunset", value, options);
 }
 
 /**
@@ -111,11 +140,13 @@ async function fetchSunset(adapter, $) {
 async function fetchForecastData(adapter, $) {
     // Find and store forecast data
     const forecastData = {};
+    let daytimeCounter = 0;
 
     // Loop through each day column in the forecast table
-    $("#forecasttable #weather tbody tr").each((index, row) => {
+    $("#forecasttable #weather tbody tr").each(async (index, row) => {
         const rowType = $(row).attr("class");
 
+        // Maximum temperature
         if (rowType === "Maximum Temperature") {
             $(row)
                 .find("td")
@@ -123,10 +154,11 @@ async function fetchForecastData(adapter, $) {
                     const dayKey = `day${dayIndex}`;
                     if (!forecastData[dayKey]) forecastData[dayKey] = {};
                     const maxTemp = parseInt($(cell).find(".temp").text().replace("°", "").trim(), 10);
-                    forecastData[dayKey].temperature_max = isNaN(maxTemp) ? null : maxTemp;
+                    forecastData[dayKey].temperatureMax = isNaN(maxTemp) ? null : maxTemp;
                 });
         }
 
+        // Minimum temperature
         if (rowType === "Minimum Temperature") {
             $(row)
                 .find("td")
@@ -134,10 +166,11 @@ async function fetchForecastData(adapter, $) {
                     const dayKey = `day${dayIndex}`;
                     if (!forecastData[dayKey]) forecastData[dayKey] = {};
                     const minTemp = parseInt($(cell).find(".temp").text().replace("°", "").trim(), 10);
-                    forecastData[dayKey].temperature_min = isNaN(minTemp) ? null : minTemp;
+                    forecastData[dayKey].temperatureMin = isNaN(minTemp) ? null : minTemp;
                 });
         }
 
+        // Sun hours
         if ($(row).attr("id") === "sun_teaser") {
             $(row)
                 .find("td span")
@@ -149,6 +182,7 @@ async function fetchForecastData(adapter, $) {
                 });
         }
 
+        // Probability of precipitation
         if ($(row).attr("id") === "precipitation_teaser") {
             $(row)
                 .find("td span")
@@ -159,45 +193,182 @@ async function fetchForecastData(adapter, $) {
                     forecastData[dayKey].precipitation = isNaN(precipitationTeaser) ? null : precipitationTeaser;
                 });
         }
+
+        // daytime0-3 (Morning, Afternoon, Evening, Night)
+        if (rowType === "symbol") {
+            const daytimeIndex = daytimeCounter;
+            daytimeCounter++;
+
+            $(row)
+                .find("td")
+                .each(async (dayIndex, cell) => {
+                    // Read the data-tt-args attribute
+                    const dataAttr = $(cell).attr("data-tt-args");
+                    if (!dataAttr) return;
+
+                    // Parse the data-tt-args list values
+                    const values = decodeHtmlEntities(dataAttr.replace(/\[|\]|"/g, "")).split(",");
+
+                    // Parse objects
+                    const precipitation = convertEmpty(parseInt(values[4], 10)); // Field 4
+                    const windGustsBft = convertEmpty(String(values[6])); // Field 6
+                    const windGustsKmh = convertEmpty(parseInt(values[7], 10)); // Field 7
+                    const windSpeedText = convertEmpty(String(values[13]), true); // Field 13
+                    const windDirection = convertEmpty(String(values[14]), true); // Field 14
+                    const windSpeedKmh = convertEmpty(parseInt(values[15], 10)); // Field 15
+                    const windSpeedBft = convertEmpty(String(values[16])); // Field 16
+                    const temperature = convertEmpty(parseInt(values[17], 10), true); // Field 17
+                    const temperatureFeelslike = convertEmpty(parseInt(values[18], 10), true); // Field 18
+                    const windDirectionShortSector = convertEmpty(String(values[20]), true); // Field 20
+
+                    // Build the day key (day0, day1, day2, day3)
+                    const dayKey = `day${dayIndex}`;
+                    if (!forecastData[dayKey]) {
+                        forecastData[dayKey] = {};
+                    }
+
+                    // Build the daytime keys (daytime0, daytime1, daytime2, daytime3)
+                    const daytimeKey = `daytime${daytimeIndex}`;
+                    if (!forecastData[dayKey][daytimeKey]) {
+                        forecastData[dayKey][daytimeKey] = {};
+                    }
+
+                    // Store the values
+                    forecastData[dayKey][daytimeKey].precipitation = precipitation;
+                    forecastData[dayKey][daytimeKey].windGustsBft = await getTranslation(adapter, String(windGustsBft));
+                    forecastData[dayKey][daytimeKey].windGustsKmh = windGustsKmh;
+                    forecastData[dayKey][daytimeKey].windSpeedText = await getTranslation(
+                        adapter,
+                        String(windSpeedText),
+                    );
+                    forecastData[dayKey][daytimeKey].windDirection = await getTranslation(
+                        adapter,
+                        String(windDirection),
+                    );
+                    forecastData[dayKey][daytimeKey].windSpeedKmh = windSpeedKmh;
+                    forecastData[dayKey][daytimeKey].windSpeedBft = await getTranslation(adapter, String(windSpeedBft));
+                    forecastData[dayKey][daytimeKey].temperature = temperature;
+                    forecastData[dayKey][daytimeKey].temperatureFeelslike = temperatureFeelslike;
+                    forecastData[dayKey][daytimeKey].windDirectionShortSector = await getTranslation(
+                        adapter,
+                        String(windDirectionShortSector),
+                    );
+                });
+        }
     });
 
     // Store forecast data
     for (const [day, values] of Object.entries(forecastData)) {
+        const dayNumber = `${day.replace(/^day/, "")}`;
+
         for (const [key, value] of Object.entries(values)) {
-            // Determine common values based on key
-            let role = "value";
-            let unit = "";
+            if (key.startsWith("daytime")) {
+                const daytime = key;
+                const daytimeValues = value;
 
-            switch (key) {
-                case "temperature_max":
-                    role = `value.temperature.max.forecast.${day.replace(/^day/, "")}`;
-                    unit = "°C";
-                    break;
-                case "temperature_min":
-                    role = `value.temperature.min.forecast.${day.replace(/^day/, "")}`;
-                    unit = "°C";
-                    break;
-                case "precipitation":
-                    role = `value.precipitation.forecast.${day.replace(/^day/, "")}`;
-                    unit = "%";
-                    break;
-                case "sun":
-                    role = "value.sun";
-                    unit = "h";
-                    break;
+                // Store daytimes
+                for (const [key, value] of Object.entries(daytimeValues)) {
+                    let type = "number";
+                    let role = "value";
+                    let unit = "";
+
+                    switch (key) {
+                        case "precipitation":
+                            if (daytime === "daytime0" || daytime === "daytime1") {
+                                role = `value.precipitation.day.forecast.${dayNumber}`;
+                            } else {
+                                role = `value.precipitation.night.forecast.${dayNumber}`;
+                            }
+                            unit = "%";
+                            break;
+                        case "windGustsBft":
+                            type = "string";
+                            role = `value.speed.wind.gust`;
+                            unit = "Bft";
+                            break;
+                        case "windGustsKmh":
+                            role = `value.speed.wind.gust`;
+                            unit = "km/h";
+                            break;
+                        case "windSpeedText":
+                            type = "string";
+                            role = `weather.direction.wind.forecast.${dayNumber}`;
+                            break;
+                        case "windDirection":
+                            type = "string";
+                            role = `weather.direction.wind.forecast.${dayNumber}`;
+                            break;
+                        case "windSpeedKmh":
+                            role = `value.speed.wind.forecast.${dayNumber}`;
+                            unit = "km/h";
+                            break;
+                        case "windSpeedBft":
+                            type = "string";
+                            role = `value.speed.wind.forecast.${dayNumber}`;
+                            unit = "Bft";
+                            break;
+                        case "temperature":
+                            role = `value.temperature.forecast.${dayNumber}`;
+                            unit = "°C";
+                            break;
+                        case "temperatureFeelslike":
+                            role = `value.temperature.feelslike.forecast.${dayNumber}`;
+                            unit = "°C";
+                            break;
+                        case "windDirectionShortSector":
+                            type = "string";
+                            role = `weather.direction.wind`;
+                            break;
+                    }
+
+                    // Define object options
+                    const options = {
+                        common: {
+                            type: type,
+                            role: role,
+                            unit: unit,
+                        },
+                    };
+
+                    // Create the object
+                    await createOrUpdateObject(adapter, `forecast.${day}.${daytime}.${key}`, value, options);
+                }
+            } else {
+                // Store current values based on key
+                let role = "value";
+                let unit = "";
+
+                switch (key) {
+                    case "temperatureMax":
+                        role = `value.temperature.max.forecast.${dayNumber}`;
+                        unit = "°C";
+                        break;
+                    case "temperatureMin":
+                        role = `value.temperature.min.forecast.${dayNumber}`;
+                        unit = "°C";
+                        break;
+                    case "precipitation":
+                        role = `value.precipitation.forecast.${dayNumber}`;
+                        unit = "%";
+                        break;
+                    case "sun":
+                        role = "value.sun";
+                        unit = "h";
+                        break;
+                }
+
+                // Define object options
+                const options = {
+                    common: {
+                        type: "number",
+                        role: role,
+                        unit: unit,
+                    },
+                };
+
+                // Create the object
+                await createOrUpdateObject(adapter, `forecast.${day}.${key}`, value, options);
             }
-
-            // Define object options
-            const options = {
-                common: {
-                    type: "number",
-                    role: role,
-                    unit: unit,
-                },
-            };
-
-            // Create the object
-            await createObject(adapter, `forecast.${day}.${key}`, value, options);
         }
     }
 }
@@ -224,7 +395,7 @@ async function checkURL(adapter) {
     }
 
     // Store url as object
-    await createObject(adapter, "url", adapter.config.url, { common: { role: "url" } });
+    await createOrUpdateObject(adapter, "url", adapter.config.url, { common: { role: "url" } });
     adapter.log.info("URL: " + adapter.config.url);
 
     return true;

@@ -1,6 +1,6 @@
 "use strict";
 
-const { createParent } = require("./createParent");
+const { createOrUpdateParent } = require("./createOrUpdateParent");
 const { getTranslation } = require("./getTranslation");
 
 /**
@@ -11,7 +11,7 @@ const { getTranslation } = require("./getTranslation");
  * @param {object} options - The object options.
  * @returns {Promise<void>} - A promise that resolves when all channels are created.
  */
-async function createObject(adapter, name, value, options = {}) {
+async function createOrUpdateObject(adapter, name, value, options = {}) {
     // Skip if name is empty
     if (!name) {
         return;
@@ -34,24 +34,31 @@ async function createObject(adapter, name, value, options = {}) {
 
     const common = options.common ?? {};
 
-    // Create the object
-    await createParent(adapter, prefix, options.firstDevice ?? true);
+    // Create the parent objects
+    await createOrUpdateParent(adapter, prefix, options.firstDevice ?? true);
+
+    // Define the object
+    const object = {
+        type: options.type ?? "state",
+        common: {
+            name: await getTranslation(adapter, common.name ?? objectName),
+            type: common.type ?? "string",
+            role: common.role ?? "value",
+            unit: common.unit ?? "",
+            read: common.read ?? true,
+            write: common.write ?? false,
+        },
+        native: options.native ?? {},
+    };
 
     // Check if the object already exists
     const existingObject = await adapter.getObjectAsync(name);
     if (!existingObject) {
-        await adapter.setObjectNotExistsAsync(name, {
-            type: options.type ?? "state",
-            common: {
-                name: await getTranslation(adapter, common.name ?? objectName),
-                type: common.type ?? "string",
-                role: common.role ?? "value",
-                unit: common.unit ?? "",
-                read: common.read ?? true,
-                write: common.write ?? false,
-            },
-            native: options.native ?? {},
-        });
+        // Create the object
+        await adapter.setObjectNotExistsAsync(name, object);
+    } else {
+        // Update the object
+        await adapter.extendObjectAsync(name, object);
     }
 
     // Set the object state
@@ -59,5 +66,5 @@ async function createObject(adapter, name, value, options = {}) {
 }
 
 module.exports = {
-    createObject,
+    createOrUpdateObject,
 };

@@ -6,30 +6,30 @@ OUTPUT_FILE="prompt.txt"
 PROJECT_FILES=(
     "../main.js"
     # "../main.test.js"
-    "../test/integration.js"
-    "../test/mocha.setup.js"
-    "../test/mocharc.custom.json"
-    "../test/package.js"
-    "../test/tsconfig.json"
-    # "../src/createObject.js"
-    # "../src/createObject.test.js"
-    # "../src/createParent.js"
-    # "../src/createParent.test.js"
+    # "../test/integration.js"
+    # "../test/mocha.setup.js"
+    # "../test/mocharc.custom.json"
+    # "../test/package.js"
+    # "../test/tsconfig.json"
+    # "../src/createOrUpdateObject.js"
+    # "../src/createOrUpdateObject.test.js"
+    # "../src/createOrUpdateParent.js"
+    # "../src/createOrUpdateParent.test.js"
     "../src/fetchDataFromURL.js"
-    "../src/fetchDataFromURL.test.js"
-    # "../src/getTranslation.js"
+    # "../src/fetchDataFromURL.test.js"
+    "../src/getTranslation.js"
     # "../src/getTranslation.test.js"
     "../io-package.json"
     "../package.json"
     # "../admin/jsonConfig.json"
     # "../admin/i18n/de/translations.json"
-    # "../admin/i18n/en/translations.json"
+    "../admin/i18n/en/translations.json"
     # "../.dev/example_url.html"
     # "../.dev/example_url_cleaned.html"
-    "../.github/workflows/test-and-release.yml"
-    "../.github/workflows/dependabot-auto-merge.yml"
-    "../.github/dependabot.yml"
-    "../.github/auto-merge.yml"
+    # "../.github/workflows/test-and-release.yml"
+    # "../.github/workflows/dependabot-auto-merge.yml"
+    # "../.github/dependabot.yml"
+    # "../.github/auto-merge.yml"
 )
 
 SYSTEM_PROMPT="""
@@ -48,22 +48,34 @@ Das Projekt bzw. der Adapter wurde bereits erstellt mittels:
 Die Objekte sollen im ioBroker in folgender Struktur gespeichert werden:
 |-- wetteronline (adapter)
     |-- 0 (instance)
-        |-- forecast (folder)
-            |-- current (folder)
+        |-- forecast (device)
+            |-- current (channel)
                 |-- temp (value)
                 |-- sunrise (value)
                 |-- sunset (value)
-            |-- day0 (folder)
-                |-- temperature_min (value)
-                |-- temperature_max (value)
+            |-- day0 (channel)
+                |-- daytime0 (channel)
+                    |-- precipitation (value)
+                    |-- temperature (value)
+                    |-- temperature_feelslike (value)
+                |-- daytime1 (channel)
+                    |-- precipitation (value)
+                    |-- temperature (value)
+                    |-- temperature_feelslike (value)
+                |-- daytime2 (channel)
+                    |-- ...
+                |-- daytime3 (channel)
+                    |-- ...
                 |-- precipitation_rain (value)
                 |-- sunshine (value)
-            |-- day1 (folder)
                 |-- temperature_min (value)
                 |-- temperature_max (value)
-                |-- precipitation_rain (value)
-                |-- sunshine (value)
-            |-- ...
+            |-- day1 (channel)
+                |-- ...
+            |-- day2 (channel)
+                |-- ...
+            |-- day3 (channel)
+                |-- ...
         |-- city (value)
         |-- url (value)
 

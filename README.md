@@ -26,6 +26,13 @@ Provide URL in this format: `https://www.wetteronline.de/wetter/<city>`
     ### **WORK IN PROGRESS**
 -->
 
+### **WORK IN PROGRESS**
+
+- New: Added daytime channels for each forecast.days (Morning, Afternoon, Evening, Night)
+- New: Added daytime.keys (precipitation, windGustsBft, windGustsKmh, windSpeedText, windDirection, windSpeedKmh, windSpeedBft, temperature, temperature_feelslike, windDirectionShortSector)
+- Update-Interval has been reduced to 25 minutes
+- Translation has been updated to new keys
+
 ### v1.0.0 (2025-01-05)
 
 - Initial release

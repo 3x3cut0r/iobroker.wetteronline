@@ -2,13 +2,14 @@
 
 // const { expect } = require("chai");
 const sinon = require("sinon");
-const { createObject } = require("./createObject");
+const { createOrUpdateObject } = require("./createOrUpdateObject");
 
 /**
  * Mock adapter instance for testing
  */
 function getMockAdapter(existingObject) {
     return {
+        extendObjectAsync: sinon.stub().resolves(),
         getForeignObjectAsync: sinon.stub().resolves({ common: { language: "en" } }),
         getObjectAsync: sinon.stub().resolves(existingObject),
         setObjectNotExistsAsync: sinon.stub().resolves(),
@@ -21,7 +22,7 @@ function getMockAdapter(existingObject) {
     };
 }
 
-describe("createObject", () => {
+describe("createOrUpdateObject", () => {
     let adapter;
 
     beforeEach(() => {
@@ -29,17 +30,19 @@ describe("createObject", () => {
     });
 
     it("should not create an object if name is empty", async () => {
-        await createObject(adapter, "", "some value");
+        await createOrUpdateObject(adapter, "", "some value");
 
         sinon.assert.notCalled(adapter.setObjectNotExistsAsync);
+        sinon.assert.notCalled(adapter.extendObjectAsync);
         sinon.assert.notCalled(adapter.setStateAsync);
     });
 
     it("should not create an object if value is undefined", async () => {
         // @ts-ignore
-        await createObject(adapter, "test.object", undefined);
+        await createOrUpdateObject(adapter, "test.object", undefined);
 
         sinon.assert.notCalled(adapter.setObjectNotExistsAsync);
+        sinon.assert.notCalled(adapter.extendObjectAsync);
         sinon.assert.notCalled(adapter.setStateAsync);
     });
 
@@ -47,7 +50,7 @@ describe("createObject", () => {
         const name = "test.object";
         const value = "test value";
 
-        await createObject(adapter, name, value);
+        await createOrUpdateObject(adapter, name, value);
 
         sinon.assert.calledWith(adapter.setObjectNotExistsAsync, name, {
             type: "state",
@@ -83,7 +86,7 @@ describe("createObject", () => {
             },
         };
 
-        await createObject(adapter, name, value, options);
+        await createOrUpdateObject(adapter, name, value, options);
 
         sinon.assert.calledWith(adapter.setObjectNotExistsAsync, name, {
             type: "state",
@@ -108,7 +111,7 @@ describe("createObject", () => {
         const name = "parent.child.test";
         const value = "test value";
 
-        await createObject(adapter, name, value);
+        await createOrUpdateObject(adapter, name, value);
 
         sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "parent", {
             type: "device",
@@ -145,11 +148,11 @@ describe("createObject", () => {
         });
     });
 
-    it("should update the value of an existing object", async () => {
+    it("should update an existing object", async () => {
         const existingObject = {
             type: "state",
             common: {
-                name: "existing object",
+                name: "existing_object",
                 type: "string",
                 role: "value",
                 unit: "",
@@ -159,12 +162,13 @@ describe("createObject", () => {
             native: {},
         };
         const adapter = getMockAdapter(existingObject);
-        const name = "existing.object";
+        const name = "existing_object";
         const newValue = "updated value";
 
-        await createObject(adapter, name, newValue);
+        await createOrUpdateObject(adapter, name, newValue);
 
         sinon.assert.notCalled(adapter.setObjectNotExistsAsync);
+        sinon.assert.calledWith(adapter.extendObjectAsync, name, existingObject);
         sinon.assert.calledWith(adapter.setStateAsync, name, {
             val: newValue,
             ack: true,
@@ -187,7 +191,7 @@ describe("createObject", () => {
             },
         };
 
-        await createObject(adapter, name, value, options);
+        await createOrUpdateObject(adapter, name, value, options);
 
         sinon.assert.calledWith(adapter.setObjectNotExistsAsync, name, {
             type: "state",

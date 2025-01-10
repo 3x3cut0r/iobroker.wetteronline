@@ -1,13 +1,14 @@
 "use strict";
 
 const sinon = require("sinon");
-const { createParent } = require("./createParent");
+const { createOrUpdateParent } = require("./createOrUpdateParent");
 
 /**
  * Mock adapter instance for testing
  */
 function getMockAdapter(existingObjects = {}) {
     return {
+        extendObjectAsync: sinon.stub().resolves(),
         getForeignObjectAsync: sinon.stub().resolves({ common: { language: "en" } }),
         getObjectAsync: sinon.stub().callsFake(async (id) => existingObjects[id] || null),
         setObjectNotExistsAsync: sinon.stub().resolves(),
@@ -20,7 +21,7 @@ function getMockAdapter(existingObjects = {}) {
     };
 }
 
-describe("createParent", () => {
+describe("createOrUpdateParent", () => {
     let adapter;
 
     beforeEach(() => {
@@ -28,7 +29,7 @@ describe("createParent", () => {
     });
 
     it("should not create any objects if prefix is empty", async () => {
-        await createParent(adapter, "");
+        await createOrUpdateParent(adapter, "");
 
         sinon.assert.notCalled(adapter.setObjectNotExistsAsync);
     });
@@ -36,8 +37,9 @@ describe("createParent", () => {
     it("should create a single parent as a device if firstDevice is not given", async () => {
         const prefix = "test";
 
-        await createParent(adapter, prefix);
+        await createOrUpdateParent(adapter, prefix);
 
+        sinon.assert.notCalled(adapter.extendObjectAsync);
         sinon.assert.calledOnceWithExactly(adapter.setObjectNotExistsAsync, prefix, {
             type: "device",
             common: {
@@ -50,8 +52,9 @@ describe("createParent", () => {
     it("should create a single parent as a device if firstDevice is true", async () => {
         const prefix = "test";
 
-        await createParent(adapter, prefix, true);
+        await createOrUpdateParent(adapter, prefix, true);
 
+        sinon.assert.notCalled(adapter.extendObjectAsync);
         sinon.assert.calledOnceWithExactly(adapter.setObjectNotExistsAsync, prefix, {
             type: "device",
             common: {
@@ -64,8 +67,9 @@ describe("createParent", () => {
     it("should create a single parent as a channel if firstDevice is false", async () => {
         const prefix = "test";
 
-        await createParent(adapter, prefix, false);
+        await createOrUpdateParent(adapter, prefix, false);
 
+        sinon.assert.notCalled(adapter.extendObjectAsync);
         sinon.assert.calledOnceWithExactly(adapter.setObjectNotExistsAsync, prefix, {
             type: "channel",
             common: {
@@ -78,7 +82,7 @@ describe("createParent", () => {
     it("should create multiple parent channels for a nested path", async () => {
         const prefix = "test.child1.child2";
 
-        await createParent(adapter, prefix, true);
+        await createOrUpdateParent(adapter, prefix, true);
 
         sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "test", {
             type: "device",
@@ -105,25 +109,31 @@ describe("createParent", () => {
         });
     });
 
-    it("should skip creating existing objects", async () => {
+    it("should update existing objects", async () => {
         const existingObjects = {
-            forecast: { type: "device" },
-            "forecast.current": { type: "channel" },
+            test: { type: "device" },
+            "test.child1": { type: "channel" },
         };
 
         adapter = getMockAdapter(existingObjects);
 
-        const prefix = "forecast.current.test";
+        const prefix = "test.child1";
 
-        await createParent(adapter, prefix, true);
+        await createOrUpdateParent(adapter, prefix, true);
 
-        sinon.assert.notCalled(adapter.setObjectNotExistsAsync.withArgs("forecast"));
-        sinon.assert.notCalled(adapter.setObjectNotExistsAsync.withArgs("forecast.current"));
-
-        sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "forecast.current.test", {
-            type: "channel",
+        sinon.assert.notCalled(adapter.setObjectNotExistsAsync.withArgs("test"));
+        sinon.assert.calledWith(adapter.extendObjectAsync, "test", {
+            type: "device",
             common: {
                 name: "test",
+            },
+            native: {},
+        });
+        sinon.assert.notCalled(adapter.setObjectNotExistsAsync.withArgs("test.child1"));
+        sinon.assert.calledWith(adapter.extendObjectAsync, "test.child1", {
+            type: "channel",
+            common: {
+                name: "child1",
             },
             native: {},
         });

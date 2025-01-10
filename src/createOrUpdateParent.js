@@ -9,7 +9,7 @@ const { getTranslation } = require("./getTranslation");
  * @param {boolean} firstDevice - If true, the first segment (e.g. "forecast") is a device instead of a channel.
  * @returns {Promise<void>} - A promise that resolves when all channels are created.
  */
-async function createParent(adapter, prefix, firstDevice = true) {
+async function createOrUpdateParent(adapter, prefix, firstDevice = true) {
     // Skip if prefix is empty
     if (!prefix) {
         return;
@@ -21,27 +21,30 @@ async function createParent(adapter, prefix, firstDevice = true) {
     for (const segment of segments) {
         currentPath = currentPath ? `${currentPath}.${segment}` : segment;
 
-        // Check if the channel or device already exists
-        const existingObject = await adapter.getObjectAsync(currentPath);
-        if (existingObject) {
-            // Skip creation if it exists
-            continue;
-        }
-
         // Determine type: the root segment is a device if firstDevice, others are channels
         const type = firstDevice && currentPath === segments[0] ? "device" : "channel";
 
         // Create the object
-        await adapter.setObjectNotExistsAsync(currentPath, {
+        const object = {
             type: type,
             common: {
                 name: await getTranslation(adapter, segment),
             },
             native: {},
-        });
+        };
+
+        // Check if the channel or device already exists
+        const existingObject = await adapter.getObjectAsync(currentPath);
+        if (!existingObject) {
+            // Create the object
+            await adapter.setObjectNotExistsAsync(currentPath, object);
+        } else {
+            // Update the object
+            await adapter.extendObjectAsync(currentPath, object);
+        }
     }
 }
 
 module.exports = {
-    createParent,
+    createOrUpdateParent,
 };

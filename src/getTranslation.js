@@ -6,10 +6,10 @@ const path = require("path");
 /**
  * Get the translation text of the given key from translations.json
  * @param adapter - The ioBroker adapter instance
- * @param {string} key - The key to translate
- * @returns {Promise<string>} - A promise that returns the translated value of the given key
+ * @param {string} value - The value to translate
+ * @returns {Promise<string>} - A promise that returns the translated value of the given value
  */
-async function getTranslation(adapter, key) {
+async function getTranslation(adapter, value) {
     // Determine current language from system config
     const systemConfig = await adapter.getForeignObjectAsync("system.config");
     let lang = systemConfig?.common?.language || "en";
@@ -25,16 +25,16 @@ async function getTranslation(adapter, key) {
     // Build the path to admin/i18n/<lang>/translations.json
     const translationsPath = path.join(__dirname, "..", "admin", "i18n", lang, "translations.json");
 
-    let translations;
+    let translations = {};
     try {
         const fileContent = fs.readFileSync(translationsPath, "utf8");
         translations = JSON.parse(fileContent);
     } catch (error) {
         adapter.log.warn(`Cannot load translations for language "${lang}": ${error.message}`);
-        return key;
+        return value;
     }
 
-    return translations[key] ?? key;
+    return Object.prototype.hasOwnProperty.call(translations, value) ? translations[value] : value;
 }
 
 module.exports = {

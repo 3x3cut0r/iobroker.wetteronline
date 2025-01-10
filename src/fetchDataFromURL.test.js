@@ -16,6 +16,7 @@ function getMockAdapter() {
             warn: sinon.stub(),
             error: sinon.stub(),
         },
+        extendObjectAsync: sinon.stub().resolves(),
         getForeignObjectAsync: sinon.stub().resolves({ common: { language: "en" } }),
         getObjectAsync: sinon.stub().resolves(null),
         setObjectNotExistsAsync: sinon.stub().resolves(),
@@ -68,8 +69,8 @@ describe("fetchDataFromURL", () => {
             adapter.config.url = url;
 
             const result = await checkURL(adapter);
-
             expect(result).to.be.true;
+
             sinon.assert.calledWith(
                 adapter.setObjectNotExistsAsync,
                 "url",
@@ -99,8 +100,8 @@ describe("fetchDataFromURL", () => {
             adapter.config.url = url;
 
             const result = await checkURL(adapter);
-
             expect(result).to.be.false;
+
             sinon.assert.calledWith(adapter.log.error, sinon.match(/URL is not valid/));
         }
     });
@@ -114,170 +115,90 @@ describe("fetchDataFromURL", () => {
         sinon.assert.calledWith(adapter.log.error, sinon.match(/URL is not valid/));
     });
 
-    it("should fetch and store object: city", async () => {
+    it("should fetch and store objects: url, city", async () => {
         const berlinHtml = fs.readFileSync(berlinHtmlPath, "utf8");
         axiosStub.resolves({ data: berlinHtml });
 
         await fetchDataFromURL(adapter);
 
-        sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "city", sinon.match.object);
-    });
+        const expectedKeys = {
+            url: sinon.match.string,
+            city: sinon.match.string,
+        };
 
-    it("should fetch and store state:  city (string)", async () => {
-        const berlinHtml = fs.readFileSync(berlinHtmlPath, "utf8");
-        axiosStub.resolves({ data: berlinHtml });
-
-        await fetchDataFromURL(adapter);
-
-        sinon.assert.calledWith(adapter.setStateAsync, "city", { val: sinon.match.string, ack: true });
-    });
-
-    it("should fetch and store object: temperature", async () => {
-        const berlinHtml = fs.readFileSync(berlinHtmlPath, "utf8");
-        axiosStub.resolves({ data: berlinHtml });
-
-        await fetchDataFromURL(adapter);
-
-        sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "forecast.current.temperature", sinon.match.object);
-    });
-
-    it("should fetch and store state:  temperature (number)", async () => {
-        const berlinHtml = fs.readFileSync(berlinHtmlPath, "utf8");
-        axiosStub.resolves({ data: berlinHtml });
-
-        await fetchDataFromURL(adapter);
-
-        sinon.assert.calledWith(adapter.setStateAsync, "forecast.current.temperature", {
-            val: sinon.match.number,
-            ack: true,
+        Object.entries(expectedKeys).forEach(([key, value]) => {
+            sinon.assert.calledWith(adapter.setObjectNotExistsAsync, `${key}`, sinon.match.object);
+            sinon.assert.calledWith(adapter.setStateAsync, `${key}`, {
+                val: value,
+                ack: true,
+            });
         });
     });
 
-    it("should fetch and store object: sunrise and sunset", async () => {
+    it("should fetch and store objects: forecast.current", async () => {
         const berlinHtml = fs.readFileSync(berlinHtmlPath, "utf8");
         axiosStub.resolves({ data: berlinHtml });
 
         await fetchDataFromURL(adapter);
 
-        sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "forecast.current.sunrise", sinon.match.object);
-        sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "forecast.current.sunset", sinon.match.object);
-    });
+        const expectedKeys = {
+            sunrise: sinon.match.string,
+            sunset: sinon.match.string,
+            temperature: sinon.match.number,
+        };
 
-    it("should fetch and store state:  sunrise and sunset (string)", async () => {
-        const berlinHtml = fs.readFileSync(berlinHtmlPath, "utf8");
-        axiosStub.resolves({ data: berlinHtml });
-
-        await fetchDataFromURL(adapter);
-
-        sinon.assert.calledWith(adapter.setStateAsync, "forecast.current.sunrise", {
-            val: sinon.match.string,
-            ack: true,
-        });
-        sinon.assert.calledWith(adapter.setStateAsync, "forecast.current.sunset", {
-            val: sinon.match.string,
-            ack: true,
+        Object.entries(expectedKeys).forEach(([key, value]) => {
+            sinon.assert.calledWith(adapter.setObjectNotExistsAsync, `forecast.current.${key}`, sinon.match.object);
+            sinon.assert.calledWith(adapter.setStateAsync, `forecast.current.${key}`, {
+                val: value,
+                ack: true,
+            });
         });
     });
 
-    it("should fetch and store object: forecast data", async () => {
+    it("should fetch and store objects: forecast.dayX.daytimeY", async () => {
         const berlinHtml = fs.readFileSync(berlinHtmlPath, "utf8");
         axiosStub.resolves({ data: berlinHtml });
 
         await fetchDataFromURL(adapter);
 
-        sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "forecast.day0.temperature_max", sinon.match.object);
-        sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "forecast.day0.temperature_min", sinon.match.object);
-        sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "forecast.day0.precipitation", sinon.match.object);
-        sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "forecast.day0.sun", sinon.match.object);
+        const expectedDayKeys = ["precipitation", "sun", "temperature_max", "temperature_min"];
+        const expectedDaytimeKeys = ["precipitation", "temperature", "temperature_feelslike"];
+        const expectedDays = 4;
+        const expectedDaytimes = 4;
 
-        sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "forecast.day1.temperature_max", sinon.match.object);
-        sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "forecast.day1.temperature_min", sinon.match.object);
-        sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "forecast.day1.precipitation", sinon.match.object);
-        sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "forecast.day1.sun", sinon.match.object);
+        // For each day (0-3)
+        for (let dayIndex = 0; dayIndex < expectedDays; dayIndex++) {
+            expectedDayKeys.forEach((dayKey) => {
+                const expectedObjectCall = [`forecast.day${dayIndex}.${dayKey}`, sinon.match.object];
+                sinon.assert.calledWithMatch(
+                    adapter.setObjectNotExistsAsync,
+                    expectedObjectCall[0],
+                    expectedObjectCall[1],
+                );
+                const expectedStateCall = [`forecast.day${dayIndex}.${dayKey}`, { val: sinon.match.number, ack: true }];
+                sinon.assert.calledWithMatch(adapter.setStateAsync, expectedStateCall[0], expectedStateCall[1]);
+            });
 
-        sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "forecast.day2.temperature_max", sinon.match.object);
-        sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "forecast.day2.temperature_min", sinon.match.object);
-        sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "forecast.day2.precipitation", sinon.match.object);
-        sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "forecast.day2.sun", sinon.match.object);
-
-        sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "forecast.day3.temperature_max", sinon.match.object);
-        sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "forecast.day3.temperature_min", sinon.match.object);
-        sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "forecast.day3.precipitation", sinon.match.object);
-        sinon.assert.calledWith(adapter.setObjectNotExistsAsync, "forecast.day3.sun", sinon.match.object);
-    });
-
-    it("should fetch and store state:  forecast data (number)", async () => {
-        const berlinHtml = fs.readFileSync(berlinHtmlPath, "utf8");
-        axiosStub.resolves({ data: berlinHtml });
-
-        await fetchDataFromURL(adapter);
-
-        sinon.assert.calledWith(adapter.setStateAsync, "forecast.day0.temperature_max", {
-            val: sinon.match.number,
-            ack: true,
-        });
-        sinon.assert.calledWith(adapter.setStateAsync, "forecast.day0.temperature_min", {
-            val: sinon.match.number,
-            ack: true,
-        });
-        sinon.assert.calledWith(adapter.setStateAsync, "forecast.day0.precipitation", {
-            val: sinon.match.number,
-            ack: true,
-        });
-        sinon.assert.calledWith(adapter.setStateAsync, "forecast.day0.sun", {
-            val: sinon.match.number,
-            ack: true,
-        });
-
-        sinon.assert.calledWith(adapter.setStateAsync, "forecast.day1.temperature_max", {
-            val: sinon.match.number,
-            ack: true,
-        });
-        sinon.assert.calledWith(adapter.setStateAsync, "forecast.day1.temperature_min", {
-            val: sinon.match.number,
-            ack: true,
-        });
-        sinon.assert.calledWith(adapter.setStateAsync, "forecast.day1.precipitation", {
-            val: sinon.match.number,
-            ack: true,
-        });
-        sinon.assert.calledWith(adapter.setStateAsync, "forecast.day1.sun", {
-            val: sinon.match.number,
-            ack: true,
-        });
-
-        sinon.assert.calledWith(adapter.setStateAsync, "forecast.day2.temperature_max", {
-            val: sinon.match.number,
-            ack: true,
-        });
-        sinon.assert.calledWith(adapter.setStateAsync, "forecast.day2.temperature_min", {
-            val: sinon.match.number,
-            ack: true,
-        });
-        sinon.assert.calledWith(adapter.setStateAsync, "forecast.day2.precipitation", {
-            val: sinon.match.number,
-            ack: true,
-        });
-        sinon.assert.calledWith(adapter.setStateAsync, "forecast.day2.sun", {
-            val: sinon.match.number,
-            ack: true,
-        });
-
-        sinon.assert.calledWith(adapter.setStateAsync, "forecast.day3.temperature_max", {
-            val: sinon.match.number,
-            ack: true,
-        });
-        sinon.assert.calledWith(adapter.setStateAsync, "forecast.day3.temperature_min", {
-            val: sinon.match.number,
-            ack: true,
-        });
-        sinon.assert.calledWith(adapter.setStateAsync, "forecast.day3.precipitation", {
-            val: sinon.match.number,
-            ack: true,
-        });
-        sinon.assert.calledWith(adapter.setStateAsync, "forecast.day3.sun", {
-            val: sinon.match.number,
-            ack: true,
-        });
+            // For each daytime (0-3)
+            for (let daytimeIndex = 0; daytimeIndex < expectedDaytimes; daytimeIndex++) {
+                expectedDaytimeKeys.forEach((daytimeKey) => {
+                    const expectedObjectCall = [
+                        `forecast.day${dayIndex}.daytime${daytimeIndex}.${daytimeKey}`,
+                        sinon.match.object,
+                    ];
+                    sinon.assert.calledWithMatch(
+                        adapter.setObjectNotExistsAsync,
+                        expectedObjectCall[0],
+                        expectedObjectCall[1],
+                    );
+                    const expectedStateCall = [
+                        `forecast.day${dayIndex}.daytime${daytimeIndex}.${daytimeKey}`,
+                        { val: sinon.match.number, ack: true },
+                    ];
+                    sinon.assert.calledWithMatch(adapter.setStateAsync, expectedStateCall[0], expectedStateCall[1]);
+                });
+            }
+        }
     });
 });
