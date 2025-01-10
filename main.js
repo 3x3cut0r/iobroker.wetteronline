@@ -22,15 +22,16 @@ class Wetteronline extends utils.Adapter {
      * Is called when databases are connected and adapter received configuration.
      */
     async onReady() {
-        const intervalInMinutes = 60; // Interval in minutes
+        const intervalInMinutes = 25; // Interval in minutes
         const intervalInMilliseconds = intervalInMinutes * 60 * 1000;
 
         // Random start offset (between 0 and the interval)
         const randomOffset = Math.floor(Math.random() * intervalInMilliseconds); // Milliseconds
-        const randomOffsetInMinutes = Math.round(randomOffset / 1000 / 60); // Minutes
+        const randomOffsetInMinutes = Math.floor(randomOffset / 1000 / 60); // Minutes
+        const randomOffsetInMinutesRest = Math.floor(randomOffset / 1000) - randomOffsetInMinutes * 60; // Rest in seconds
 
         this.log.info(
-            `Setting periodic execution every ${intervalInMinutes} minutes with a random offset of ${randomOffsetInMinutes} minutes.`,
+            `Setting periodic execution every ${intervalInMinutes} minutes with a random offset of ${randomOffsetInMinutes} minutes and ${randomOffsetInMinutesRest} seconds.`,
         );
 
         // Execute once initially
