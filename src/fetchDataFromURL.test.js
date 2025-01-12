@@ -162,27 +162,43 @@ describe("fetchDataFromURL", () => {
 
         await fetchDataFromURL(adapter);
 
-        const expectedDayKeys = ["precipitation", "sun", "temperature_max", "temperature_min"];
-        const expectedDaytimeKeys = ["precipitation", "temperature", "temperature_feelslike"];
+        const expectedDayKeyMatchers = {
+            precipitation: sinon.match.number,
+            sun: sinon.match.number,
+            temperatureMax: sinon.match.number,
+            temperatureMin: sinon.match.number,
+        };
+        const expectedDaytimeKeyMatchers = {
+            precipitation: sinon.match.number,
+            windGustsBft: sinon.match.string,
+            windGustsKmh: sinon.match.number,
+            windSpeedText: sinon.match.string,
+            windDirection: sinon.match.string,
+            windSpeedKmh: sinon.match.number,
+            windSpeedBft: sinon.match.string,
+            temperature: sinon.match.number,
+            temperatureFeelslike: sinon.match.number,
+            windDirectionShortSector: sinon.match.string,
+        };
         const expectedDays = 4;
         const expectedDaytimes = 4;
 
         // For each day (0-3)
         for (let dayIndex = 0; dayIndex < expectedDays; dayIndex++) {
-            expectedDayKeys.forEach((dayKey) => {
+            Object.entries(expectedDayKeyMatchers).forEach(([dayKey, dayMatcher]) => {
                 const expectedObjectCall = [`forecast.day${dayIndex}.${dayKey}`, sinon.match.object];
                 sinon.assert.calledWithMatch(
                     adapter.setObjectNotExistsAsync,
                     expectedObjectCall[0],
                     expectedObjectCall[1],
                 );
-                const expectedStateCall = [`forecast.day${dayIndex}.${dayKey}`, { val: sinon.match.number, ack: true }];
+                const expectedStateCall = [`forecast.day${dayIndex}.${dayKey}`, { val: dayMatcher, ack: true }];
                 sinon.assert.calledWithMatch(adapter.setStateAsync, expectedStateCall[0], expectedStateCall[1]);
             });
 
             // For each daytime (0-3)
             for (let daytimeIndex = 0; daytimeIndex < expectedDaytimes; daytimeIndex++) {
-                expectedDaytimeKeys.forEach((daytimeKey) => {
+                Object.entries(expectedDaytimeKeyMatchers).forEach(([daytimeKey, daytimeMatcher]) => {
                     const expectedObjectCall = [
                         `forecast.day${dayIndex}.daytime${daytimeIndex}.${daytimeKey}`,
                         sinon.match.object,
@@ -192,9 +208,10 @@ describe("fetchDataFromURL", () => {
                         expectedObjectCall[0],
                         expectedObjectCall[1],
                     );
+
                     const expectedStateCall = [
                         `forecast.day${dayIndex}.daytime${daytimeIndex}.${daytimeKey}`,
-                        { val: sinon.match.number, ack: true },
+                        { val: daytimeMatcher, ack: true },
                     ];
                     sinon.assert.calledWithMatch(adapter.setStateAsync, expectedStateCall[0], expectedStateCall[1]);
                 });
