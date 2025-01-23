@@ -25,8 +25,7 @@ Provide URL in this format: `https://www.wetteronline.de/wetter/<city>`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-
-### **WORK IN PROGRESS**
+### 1.1.0 (2025-01-23)
 
 - New: Added daytime channels for each forecast.days (Morning, Afternoon, Evening, Night)
 - New: Added daytime.keys (precipitation, windGustsBft, windGustsKmh, windSpeedText, windDirection, windSpeedKmh, windSpeedBft, temperature, temperature_feelslike, windDirectionShortSector)

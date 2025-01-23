@@ -1,83 +1,102 @@
 {
-    "common": {
-        "name": "wetteronline",
-        "version": "1.0.0",
-        "news": {
-            "1.0.0": {
-                "en": "initial release",
-                "de": "Erstveröffentlichung",
-                "ru": "Начальная версия",
-                "pt": "lançamento inicial",
-                "nl": "Eerste uitgave",
-                "fr": "Première version",
-                "it": "Versione iniziale",
-                "es": "Versión inicial",
-                "pl": "Pierwsze wydanie",
-                "uk": "Початкова версія",
-                "zh-cn": "首次出版"
-            }
-        },
-        "titleLang": {
-            "en": "wetteronline",
-            "de": "wetteronline",
-            "ru": "мокрыйонлайн",
-            "pt": "molhado online",
-            "nl": "wetteronline",
-            "fr": "plus humideen ligne",
-            "it": "wetteronline",
-            "es": "mojado en línea",
-            "pl": "wetteronline",
-            "uk": "wetteronline",
-            "zh-cn": "湿在线"
-        },
-        "desc": {
-            "en": "Weather forecast from wetteronline.de",
-            "de": "Wettervorhersage von wetteronline.de",
-            "ru": "Прогноз погоды с wetteronline.de",
-            "pt": "Previsão do tempo de wetteronline.de",
-            "nl": "Weersvoorspelling van wetteronline.de",
-            "fr": "Prévisions météo de wetteronline.de",
-            "it": "Previsioni meteo da wetteronline.de",
-            "es": "Pronóstico del tiempo de wetteronline.de",
-            "pl": "Prognoza pogody z wetteronline.de",
-            "uk": "Прогноз погоди з wetteronline.de",
-            "zh-cn": "来自 wetteronline.de 的天气预报"
-        },
-        "authors": ["3x3cut0r <julianreith@gmx.de>"],
-        "keywords": ["weather", "wetter", "sun"],
-        "licenseInformation": {
-            "type": "free",
-            "license": "MIT"
-        },
-        "platform": "Javascript/Node.js",
-        "icon": "wetteronline.png",
-        "enabled": true,
-        "extIcon": "https://raw.githubusercontent.com/3x3cut0r/ioBroker.wetteronline/main/admin/wetteronline.png",
-        "readme": "https://github.com/3x3cut0r/ioBroker.wetteronline/blob/main/README.md",
-        "loglevel": "info",
-        "tier": 3,
-        "mode": "daemon",
-        "type": "weather",
-        "compact": true,
-        "connectionType": "cloud",
-        "dataSource": "poll",
-        "adminUI": {
-            "config": "json"
-        },
-        "dependencies": [
-            {
-                "js-controller": ">=6.0.11"
-            }
-        ],
-        "globalDependencies": [
-            {
-                "admin": ">=7.0.23"
-            }
-        ]
+  "common": {
+    "name": "wetteronline",
+    "version": "1.1.0",
+    "news": {
+      "1.1.0": {
+        "en": "New: Added daytime channels for each forecast.days (Morning, Afternoon, Evening, Night)\nNew: Added daytime.keys (precipitation, windGustsBft, windGustsKmh, windSpeedText, windDirection, windSpeedKmh, windSpeedBft, temperature, temperature_feelslike, windDirectionShortSector)\nUpdate-Interval has been reduced to 25 minutes\nTranslation has been updated to new keys",
+        "de": "Neu: Hinzugefügt Tageskanäle für jede Prognose. Tage (Morning, Nachmittag, Abend, Nacht)\nNeu: Tageszeit hinzugefügt. Schlüssel (Vorfreude, WindGustsBft, WindGustsKmh, WindSpeedText, WindSpeedKmh, WindSpeedBft, Temperatur, temperatur_feelslike, WindDirectionShortSector)\nUpdate-Interval wurde auf 25 Minuten reduziert\nÜbersetzung wurde auf neue Schlüssel aktualisiert",
+        "ru": "Новый: Добавлены дневные каналы для каждого прогноза. Дни (вечер, вечер, ночь)\nНовый: Добавлено дневное время. клавиши (профилактика, WindGustsBft, windGustsKmh, windSpeedText, windDirection, windSpeedKmh, windSpeedBft, температура, температура_feelslike, windDirectionShortSector)\nОбновление-Интервал сокращен до 25 минут\nПеревод был обновлен на новые ключи",
+        "pt": "Novo: Adicionado canais diurnos para cada previsão. dias (manhã, tarde, noite, noite)\nNovo: Adicionado dia. chaves (precipitação, vento GustsBft, ventoGustsKmh, windSpeedText, windDirection, windSpeedKmh, windSpeedBft, temperatura, temperatura_feelslike, windDirectionShortSector)\nAtualização-Interval foi reduzida para 25 minutos\nTradução foi atualizada para novas chaves",
+        "nl": "Nieuw: Toegevoegde kanalen overdag voor elke prognose. Dagen (Morgen, Middag, Avond, Nacht)\nNieuw: Overdag toegevoegd. toetsen ( Neerslag, windGustsBft, windGustsKmh, windSpeedTekst, windDirectie, windSpeedKmh, windSpeedBft, temperatuur, temperatuur_feelslike, windDirectieShortSector)\nUpdate-interval is teruggebracht tot 25 minuten\nVertaling is bijgewerkt naar nieuwe sleutels",
+        "fr": "Nouveau : Ajout de canaux diurnes pour chaque prévision. jours (matin, après-midi, soir, nuit)\nNouveau: Ajouté jour. touches (précipitation, ventGustsBft, ventGustsKmh, ventSpeedText, ventDirection, ventSpeedKmh, ventSpeedBft, température, température_feelslike, ventDirectionShortSector)\nMise à jour-Interval a été réduit à 25 minutes\nLa traduction a été mise à jour pour les nouvelles clés",
+        "it": "Nuovo: Aggiunto canali diurni per ogni previsione. giorni (Morning, pomeriggio, sera, notte)\nNuovo: Aggiunto giorno. chiavi (precipitazione, ventoGustsBft, ventoGustsKmh, ventoSpeedText, ventoDirezione, ventoSpeedKmh, ventoSpeedBft, temperatura, temperatura_feelslike, ventoDirezioneShortSector)\nUpdate-Interval è stato ridotto a 25 minuti\nLa traduzione è stata aggiornata a nuove chiavi",
+        "es": "Nuevo: canales diarios adicionales para cada pronóstico. días (Morning, Afternoon, Evening, Night)\nNuevo: Añadido el día. claves (precipitación, vientoGustsBft, windGustsKmh, windSpeedText, windDirection, windSpeedKmh, windSpeedBft, temperature_feelslike, windDirectionShortSector)\nActualización-Interval se ha reducido a 25 minutos\nLa traducción ha sido actualizada a nuevas claves",
+        "pl": "Nowy: Dodano kanały dzienne dla każdej prognozy. dni (ranek, popołudnie, wieczór, noc)\nNowy: Dodano dzień. Klawisze (opady, wiatry GustsBft, windGustsKmh, wiatrówSpeedText, wiatrówKmh, windSpeedBft, temperatura, temperatura _ feelslike, windDirectionShortSector)\nUpdate- Interval został zredukowany do 25 minut\nTłumaczenie zostało zaktualizowane do nowych kluczy",
+        "uk": "Нові: Додані денний канали для кожного прогнозу. дні (Морнінг, післяон, Вечір, Ніч)\nНовий: Додана денний час. Ключові слова (посадка, вітрГустиБфт, вітрГустиКмх, вітерСпеченийТекст, вітрДиреція, вітрСпеченийКм, вітрСпеченийБфт, температура, температура_фельси, вітерДиреонШортСектор)\nОновлено 25 хвилин\nПереклад було оновлено до нових ключів",
+        "zh-cn": "新建:每个预报增加的日间频道. (上午、下午、晚上、晚上)\n新增:日加时. 键(降水、风吹Bft、风吹Kmh、风吹Text、风吹Direction、风吹Kmh、风吹Bft、温度、温度_感觉、风吹ShortSector)\n更新- Interval 已缩短为25分钟\n翻译已更新为新密钥"
+      },
+      "1.0.0": {
+        "en": "initial release",
+        "de": "Erstveröffentlichung",
+        "ru": "Начальная версия",
+        "pt": "lançamento inicial",
+        "nl": "Eerste uitgave",
+        "fr": "Première version",
+        "it": "Versione iniziale",
+        "es": "Versión inicial",
+        "pl": "Pierwsze wydanie",
+        "uk": "Початкова версія",
+        "zh-cn": "首次出版"
+      }
     },
-    "native": {
-        "url": "https://www.wetteronline.de/wetter/berlin"
+    "titleLang": {
+      "en": "wetteronline",
+      "de": "wetteronline",
+      "ru": "мокрыйонлайн",
+      "pt": "molhado online",
+      "nl": "wetteronline",
+      "fr": "plus humideen ligne",
+      "it": "wetteronline",
+      "es": "mojado en línea",
+      "pl": "wetteronline",
+      "uk": "wetteronline",
+      "zh-cn": "湿在线"
     },
-    "objects": [],
-    "instanceObjects": []
+    "desc": {
+      "en": "Weather forecast from wetteronline.de",
+      "de": "Wettervorhersage von wetteronline.de",
+      "ru": "Прогноз погоды с wetteronline.de",
+      "pt": "Previsão do tempo de wetteronline.de",
+      "nl": "Weersvoorspelling van wetteronline.de",
+      "fr": "Prévisions météo de wetteronline.de",
+      "it": "Previsioni meteo da wetteronline.de",
+      "es": "Pronóstico del tiempo de wetteronline.de",
+      "pl": "Prognoza pogody z wetteronline.de",
+      "uk": "Прогноз погоди з wetteronline.de",
+      "zh-cn": "来自 wetteronline.de 的天气预报"
+    },
+    "authors": [
+      "3x3cut0r <julianreith@gmx.de>"
+    ],
+    "keywords": [
+      "weather",
+      "wetter",
+      "sun"
+    ],
+    "licenseInformation": {
+      "type": "free",
+      "license": "MIT"
+    },
+    "platform": "Javascript/Node.js",
+    "icon": "wetteronline.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/3x3cut0r/ioBroker.wetteronline/main/admin/wetteronline.png",
+    "readme": "https://github.com/3x3cut0r/ioBroker.wetteronline/blob/main/README.md",
+    "loglevel": "info",
+    "tier": 3,
+    "mode": "daemon",
+    "type": "weather",
+    "compact": true,
+    "connectionType": "cloud",
+    "dataSource": "poll",
+    "adminUI": {
+      "config": "json"
+    },
+    "dependencies": [
+      {
+        "js-controller": ">=6.0.11"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=7.0.23"
+      }
+    ]
+  },
+  "native": {
+    "url": "https://www.wetteronline.de/wetter/berlin"
+  },
+  "objects": [],
+  "instanceObjects": []
 }
