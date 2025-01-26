@@ -6,7 +6,7 @@ const { getTranslation } = require("./getTranslation");
 /**
  * Create an ioBroker object
  * @param {object} adapter - The ioBroker adapter instance.
- * @param {string} name - The name of the object including path(e.g., "forecast.current.day0.temperature").
+ * @param {string} name - The name of the object including path (e.g., "forecast.current.day0.temperature").
  * @param {string|number|null} value - The value of the object.
  * @param {object} options - The object options.
  * @returns {Promise<void>} - A promise that resolves when all channels are created.

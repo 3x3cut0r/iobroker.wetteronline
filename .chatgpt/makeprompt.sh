@@ -6,26 +6,28 @@ OUTPUT_FILE="prompt.txt"
 PROJECT_FILES=(
     "../main.js"
     # "../main.test.js"
+    # "../test/404.html"
+    # "../test/berlin.html"
     # "../test/integration.js"
     # "../test/mocha.setup.js"
     # "../test/mocharc.custom.json"
     # "../test/package.js"
     # "../test/tsconfig.json"
-    # "../src/createOrUpdateObject.js"
+    "../src/createOrUpdateObject.js"
     # "../src/createOrUpdateObject.test.js"
     # "../src/createOrUpdateParent.js"
     # "../src/createOrUpdateParent.test.js"
+    # "../src/deleteObject.js"
+    # "../src/deleteObject.test.js"
     "../src/fetchDataFromURL.js"
     # "../src/fetchDataFromURL.test.js"
-    "../src/getTranslation.js"
+    # "../src/getTranslation.js"
     # "../src/getTranslation.test.js"
-    "../io-package.json"
-    "../package.json"
+    # "../io-package.json"
+    # "../package.json"
     # "../admin/jsonConfig.json"
     # "../admin/i18n/de/translations.json"
-    "../admin/i18n/en/translations.json"
-    # "../.dev/example_url.html"
-    # "../.dev/example_url_cleaned.html"
+    # "../admin/i18n/en/translations.json"
     # "../.github/workflows/test-and-release.yml"
     # "../.github/workflows/dependabot-auto-merge.yml"
     # "../.github/dependabot.yml"
@@ -53,31 +55,39 @@ Die Objekte sollen im ioBroker in folgender Struktur gespeichert werden:
                 |-- temp (value)
                 |-- sunrise (value)
                 |-- sunset (value)
-            |-- day0 (channel)
-                |-- daytime0 (channel)
+            |-- 0d (channel)
+                |-- 0dt (channel)
                     |-- precipitation (value)
                     |-- temperature (value)
                     |-- temperature_feelslike (value)
-                |-- daytime1 (channel)
+                |-- 1dt (channel)
                     |-- precipitation (value)
                     |-- temperature (value)
                     |-- temperature_feelslike (value)
-                |-- daytime2 (channel)
+                |-- 2dt (channel)
                     |-- ...
-                |-- daytime3 (channel)
+                |-- 3dt (channel)
                     |-- ...
                 |-- precipitation_rain (value)
                 |-- sunshine (value)
                 |-- temperature_min (value)
                 |-- temperature_max (value)
-            |-- day1 (channel)
+            |-- 1d (channel)
                 |-- ...
-            |-- day2 (channel)
+            |-- 2d (channel)
                 |-- ...
-            |-- day3 (channel)
+            |-- 3d (channel)
                 |-- ...
+        |-- forecastHourly (device)
+            |-- 0h (channel)
+                |-- apparentTemperature (value)
+                |-- daySynonym (value)
+                |-- ...
+            |-- 1h (channel)
+            |-- ...
         |-- city (value)
         |-- url (value)
+
 
 # Aufgabe
 Deine Hauptaufgabe ist es, dem Benutzer bei der Programmierung, Implementierung, Optimierung, Verbesserung oder Fehlerbeseitigung dieses ioBroker Adapters zu helfen.

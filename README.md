@@ -25,6 +25,14 @@ Provide URL in this format: `https://www.wetteronline.de/wetter/<city>`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+
+- New: Added forecastHourly channels (0h, 1h, ...)
+- Renamed channels to follow a more common naming convention (forecast.0d.0dt.key)
+- Fix: Delete object tree after URL has changed to clean zombie objects.
+- Translation has been updated to new keys
+
 ### 1.1.0 (2025-01-23)
 
 - New: Added daytime channels for each forecast.days (Morning, Afternoon, Evening, Night)

@@ -1,6 +1,7 @@
 "use strict";
 
 const utils = require("@iobroker/adapter-core");
+const { deleteAdapterObjects } = require("./src/deleteObject");
 const { fetchDataFromURL } = require("./src/fetchDataFromURL");
 
 class Wetteronline extends utils.Adapter {
@@ -34,6 +35,14 @@ class Wetteronline extends utils.Adapter {
             `Setting periodic execution every ${intervalInMinutes} minutes with a random offset of ${randomOffsetInMinutes} minutes and ${randomOffsetInMinutesRest} seconds.`,
         );
 
+        // Check, if URL has changed
+        const urlObject = await this.getObjectAsync("url");
+        const storedUrl = urlObject?.common?.custom?.value ?? null;
+        if (this.config.url !== storedUrl) {
+            this.log.debug("URL has changed. Deleting all adapter objects.");
+            await deleteAdapterObjects(this);
+        }
+
         // Execute once initially
         await fetchDataFromURL(this).catch((error) => {
             this.log.error(`Error fetching data from url (initial): ${error.message}`);
@@ -66,17 +75,9 @@ class Wetteronline extends utils.Adapter {
      * @param {string} id
      * @param {ioBroker.Object | null | undefined} obj
      */
-    onObjectChange(id, obj) {
+    async onObjectChange(id, obj) {
         if (obj && id === `system.adapter.${this.namespace}`) {
             this.log.info("Adapter configuration changed.");
-
-            // Check if the url has been updated
-            const newurl = obj.native?.url;
-            if (newurl && newurl !== this.config.url) {
-                // Update url
-                this.config.url = newurl;
-                this.onReady();
-            }
         }
     }
 

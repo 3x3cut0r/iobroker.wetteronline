@@ -151,7 +151,7 @@ async function fetchForecastData(adapter, $) {
             $(row)
                 .find("td")
                 .each((dayIndex, cell) => {
-                    const dayKey = `day${dayIndex}`;
+                    const dayKey = `${dayIndex}d`;
                     if (!forecastData[dayKey]) forecastData[dayKey] = {};
                     const maxTemp = parseInt($(cell).find(".temp").text().replace("°", "").trim(), 10);
                     forecastData[dayKey].temperatureMax = isNaN(maxTemp) ? null : maxTemp;
@@ -163,7 +163,7 @@ async function fetchForecastData(adapter, $) {
             $(row)
                 .find("td")
                 .each((dayIndex, cell) => {
-                    const dayKey = `day${dayIndex}`;
+                    const dayKey = `${dayIndex}d`;
                     if (!forecastData[dayKey]) forecastData[dayKey] = {};
                     const minTemp = parseInt($(cell).find(".temp").text().replace("°", "").trim(), 10);
                     forecastData[dayKey].temperatureMin = isNaN(minTemp) ? null : minTemp;
@@ -175,7 +175,7 @@ async function fetchForecastData(adapter, $) {
             $(row)
                 .find("td span")
                 .each((dayIndex, cell) => {
-                    const dayKey = `day${dayIndex}`;
+                    const dayKey = `${dayIndex}d`;
                     if (!forecastData[dayKey]) forecastData[dayKey] = {};
                     const sunTeaser = parseInt($(cell).text().replace("Std.", "").trim(), 10);
                     forecastData[dayKey].sun = isNaN(sunTeaser) ? null : sunTeaser;
@@ -187,7 +187,7 @@ async function fetchForecastData(adapter, $) {
             $(row)
                 .find("td span")
                 .each((dayIndex, cell) => {
-                    const dayKey = `day${dayIndex}`;
+                    const dayKey = `${dayIndex}d`;
                     if (!forecastData[dayKey]) forecastData[dayKey] = {};
                     const precipitationTeaser = parseInt($(cell).text().replace("%", "").trim(), 10);
                     forecastData[dayKey].precipitation = isNaN(precipitationTeaser) ? null : precipitationTeaser;
@@ -221,14 +221,14 @@ async function fetchForecastData(adapter, $) {
                     const temperatureFeelslike = convertEmpty(parseInt(values[18], 10), true); // Field 18
                     const windDirectionShortSector = convertEmpty(String(values[20]), true); // Field 20
 
-                    // Build the day key (day0, day1, day2, day3)
-                    const dayKey = `day${dayIndex}`;
+                    // Build the day key (0d, 1d, 2d, 3d)
+                    const dayKey = `${dayIndex}d`;
                     if (!forecastData[dayKey]) {
                         forecastData[dayKey] = {};
                     }
 
-                    // Build the daytime keys (daytime0, daytime1, daytime2, daytime3)
-                    const daytimeKey = `daytime${daytimeIndex}`;
+                    // Build the daytime keys (0dt, 1dt, 2dt, 3dt)
+                    const daytimeKey = `${daytimeIndex}dt`;
                     if (!forecastData[dayKey][daytimeKey]) {
                         forecastData[dayKey][daytimeKey] = {};
                     }
@@ -262,7 +262,7 @@ async function fetchForecastData(adapter, $) {
         const dayNumber = `${day.replace(/^day/, "")}`;
 
         for (const [key, value] of Object.entries(values)) {
-            if (key.startsWith("daytime")) {
+            if (key.endsWith("dt")) {
                 const daytime = key;
                 const daytimeValues = value;
 
@@ -274,7 +274,7 @@ async function fetchForecastData(adapter, $) {
 
                     switch (key) {
                         case "precipitation":
-                            if (daytime === "daytime0" || daytime === "daytime1") {
+                            if (daytime === "0dt" || daytime === "1dt") {
                                 role = `value.precipitation.day.forecast.${dayNumber}`;
                             } else {
                                 role = `value.precipitation.night.forecast.${dayNumber}`;
@@ -291,9 +291,6 @@ async function fetchForecastData(adapter, $) {
                             unit = "km/h";
                             break;
                         case "windSpeedText":
-                            type = "string";
-                            role = `weather.direction.wind.forecast.${dayNumber}`;
-                            break;
                         case "windDirection":
                             type = "string";
                             role = `weather.direction.wind.forecast.${dayNumber}`;
@@ -374,6 +371,191 @@ async function fetchForecastData(adapter, $) {
 }
 
 /**
+ * Extracts hourly forecast data from the HTML content.
+ * @param adapter - The ioBroker adapter instance
+ * @param $ - The loaded Cheerio object.
+ */
+async function fetchHourlyForecastData(adapter, $) {
+    const hourlyForecastData = {};
+    const hourlyData = [];
+
+    // Extract all <script> tags inside the hourly container
+    const scripts = $("#hourly-container script").get();
+    scripts.forEach((script) => {
+        const scriptContent = $(script).html();
+        const hourlyDataMatch = scriptContent.match(
+            /WO\.metadata\.p_city_weather\.hourlyForecastElements\.push\(([\s\S]*?)\);/g,
+        );
+
+        if (hourlyDataMatch) {
+            hourlyDataMatch.forEach((dataEntry) => {
+                const jsonData = dataEntry.match(/push\(([\s\S]*?)\);/);
+                if (jsonData && jsonData[1]) {
+                    try {
+                        const dataObj = decodeHtmlEntities(jsonData[1]).replace(
+                            /([{,]\s*)([A-Za-z0-9_]+)\s*:/g,
+                            '$1"$2":',
+                        );
+                        const parsedData = JSON.parse(dataObj);
+                        hourlyData.push(parsedData);
+                    } catch (error) {
+                        adapter.log.warn(`Failed to parse hourly data: ${error.message}`);
+                    }
+                }
+            });
+        }
+    });
+
+    // Process each hour's data
+    for (const [index, data] of hourlyData.entries()) {
+        // Parse objects
+        const apparentTemperature = convertEmpty(parseInt(data.apparentTemperature, 10));
+        const daySynonym = convertEmpty(String(data.daySynonym));
+        const dayTime = convertEmpty(String(data.dayTime));
+        const docrootVersion = convertEmpty(String(data.docrootVersion));
+        const freshSnowDepth = convertEmpty(parseInt(data.freshSnowDepth, 10));
+        const hour = convertEmpty(parseInt(data.hour, 10));
+        const hourlyPrecipitationAmount = convertEmpty(String(data.hourlyPrecipitationAmount));
+        const hourlyPrecipitationDuration = convertEmpty(parseInt(data.hourlyPrecipitationDuration, 10));
+        const precipitationProbability = convertEmpty(parseInt(data.precipitationProbability, 10));
+        const smog = convertEmpty(parseInt(data.smog, 10));
+        const snowProbability = convertEmpty(parseInt(data.snowProbability, 10));
+        const symbol = convertEmpty(String(data.symbol));
+        const symbolText = convertEmpty(String(data.symbolText));
+        const temperature = convertEmpty(parseInt(data.temperature, 10));
+        const thunderstormProbability = convertEmpty(parseInt(data.thunderstormProbability, 10));
+        const tierAppendix = convertEmpty(parseInt(data.tierAppendix, 10));
+        const umbrellaState = convertEmpty(String(data.umbrellaState));
+        const weatherInfoIndex = convertEmpty(parseInt(data.weatherInfoIndex, 10));
+        const windDirection = convertEmpty(String(data.windDirection));
+        const windDirectionShortSector = convertEmpty(String(data.windDirectionShortSector));
+        const windGusts = convertEmpty(parseInt(data.windGusts, 10));
+        const windGustsKmh = convertEmpty(parseInt(data.windGustsKmh, 10));
+        const windSpeedBft = convertEmpty(String(data.windSpeedBft));
+        const windSpeedKmh = convertEmpty(parseInt(data.windSpeedKmh, 10));
+        const windSpeedText = convertEmpty(String(data.windSpeedText));
+        const windy = convertEmpty(String(data.windy));
+        const airPressure = convertEmpty(parseInt(data.airPressure, 10));
+        const humidity = convertEmpty(parseInt(data.humidity, 10));
+
+        // Build the hour key (0h, 1h, 2h, 3h, ...)
+        const hourKey = `${index}h`;
+        if (!hourlyForecastData[hourKey]) {
+            hourlyForecastData[hourKey] = {};
+        }
+
+        // Store the values
+        hourlyForecastData[hourKey]["apparentTemperature"] = apparentTemperature;
+        hourlyForecastData[hourKey]["daySynonym"] = await getTranslation(adapter, String(daySynonym));
+        hourlyForecastData[hourKey]["dayTime"] = await getTranslation(adapter, String(dayTime));
+        hourlyForecastData[hourKey]["docrootVersion"] = await getTranslation(adapter, String(docrootVersion));
+        hourlyForecastData[hourKey]["freshSnowDepth"] = freshSnowDepth;
+        hourlyForecastData[hourKey]["hour"] = hour;
+        hourlyForecastData[hourKey]["hourlyPrecipitationAmount"] = hourlyPrecipitationAmount;
+        hourlyForecastData[hourKey]["hourlyPrecipitationDuration"] = hourlyPrecipitationDuration;
+        hourlyForecastData[hourKey]["precipitationProbability"] = precipitationProbability;
+        hourlyForecastData[hourKey]["smog"] = smog;
+        hourlyForecastData[hourKey]["snowProbability"] = snowProbability;
+        hourlyForecastData[hourKey]["symbol"] = await getTranslation(adapter, String(symbol));
+        hourlyForecastData[hourKey]["symbolText"] = await getTranslation(adapter, String(symbolText));
+        hourlyForecastData[hourKey]["temperature"] = temperature;
+        hourlyForecastData[hourKey]["thunderstormProbability"] = thunderstormProbability;
+        hourlyForecastData[hourKey]["tierAppendix"] = tierAppendix;
+        hourlyForecastData[hourKey]["umbrellaState"] = await getTranslation(adapter, String(umbrellaState));
+        hourlyForecastData[hourKey]["weatherInfoIndex"] = weatherInfoIndex;
+        hourlyForecastData[hourKey]["windDirection"] = await getTranslation(adapter, String(windDirection));
+        hourlyForecastData[hourKey]["windDirectionShortSector"] = await getTranslation(
+            adapter,
+            String(windDirectionShortSector),
+        );
+        hourlyForecastData[hourKey]["windGusts"] = windGusts;
+        hourlyForecastData[hourKey]["windGustsKmh"] = windGustsKmh;
+        hourlyForecastData[hourKey]["windSpeedBft"] = windSpeedBft;
+        hourlyForecastData[hourKey]["windSpeedKmh"] = windSpeedKmh;
+
+        hourlyForecastData[hourKey]["windSpeedText"] = await getTranslation(adapter, String(windSpeedText));
+        hourlyForecastData[hourKey]["windy"] = await getTranslation(adapter, String(windy));
+        hourlyForecastData[hourKey]["airPressure"] = airPressure;
+        hourlyForecastData[hourKey]["humidity"] = humidity;
+
+        for (const [key, value] of Object.entries(hourlyForecastData[hourKey])) {
+            let type = "number";
+            let role = "value";
+            let unit = "";
+
+            switch (key) {
+                // Temperatures
+                case "apparentTemperature":
+                case "temperature":
+                    role = "value.temperature";
+                    unit = "°C";
+                    break;
+                // Strings
+                case "daySynonym":
+                case "dayTime":
+                case "docrootVersion":
+                case "symbol":
+                case "umbrellaState":
+                case "windy":
+                case "windSpeedText":
+                    type = "string";
+                    break;
+                case "windSpeedBft":
+                case "windGustsBft":
+                    type = "string";
+                    role = "value.speed.wind.bft";
+                    unit = "Bft";
+                    break;
+                case "windDirection":
+                case "windDirectionShortSector":
+                    type = "string";
+                    role = "weather.direction.wind";
+                    break;
+                case "hourlyPrecipitationAmount":
+                    type = "string";
+                    role = "value.precipitation.amount";
+                    unit = "mm";
+                    break;
+                case "symbolText":
+                    type = "string";
+                    role = "weather.symbol";
+                    break;
+                // Other values
+                case "precipitationProbability":
+                case "snowProbability":
+                case "humidity":
+                    role = "value.precipitation.probability";
+                    unit = "%";
+                    break;
+                case "windSpeedKmh":
+                case "windGustsKmh":
+                    role = "value.speed.wind";
+                    unit = "km/h";
+                    break;
+                case "airPressure":
+                    role = "value.airPressure";
+                    unit = "hPa";
+                    break;
+                default:
+                    break;
+            }
+
+            // Define object options
+            const options = {
+                common: {
+                    type: type,
+                    role: role,
+                    unit: unit,
+                },
+            };
+
+            // Create or update the object in ioBroker
+            await createOrUpdateObject(adapter, `forecastHourly.${hourKey}.${key}`, value, options);
+        }
+    }
+}
+
+/**
  * Checks if the url is valid and stores it as an object
  * @param adapter - The ioBroker adapter instance
  */
@@ -427,6 +609,7 @@ async function fetchDataFromURL(adapter) {
         await fetchSunrise(adapter, $);
         await fetchSunset(adapter, $);
         await fetchForecastData(adapter, $);
+        await fetchHourlyForecastData(adapter, $);
     }
 }
 

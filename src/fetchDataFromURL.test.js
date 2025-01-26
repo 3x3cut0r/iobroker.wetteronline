@@ -156,7 +156,7 @@ describe("fetchDataFromURL", () => {
         });
     });
 
-    it("should fetch and store objects: forecast.dayX.daytimeY", async () => {
+    it("should fetch and store objects: forecast.Xd.Ydt", async () => {
         const berlinHtml = fs.readFileSync(berlinHtmlPath, "utf8");
         axiosStub.resolves({ data: berlinHtml });
 
@@ -186,13 +186,13 @@ describe("fetchDataFromURL", () => {
         // For each day (0-3)
         for (let dayIndex = 0; dayIndex < expectedDays; dayIndex++) {
             Object.entries(expectedDayKeyMatchers).forEach(([dayKey, dayMatcher]) => {
-                const expectedObjectCall = [`forecast.day${dayIndex}.${dayKey}`, sinon.match.object];
+                const expectedObjectCall = [`forecast.${dayIndex}d.${dayKey}`, sinon.match.object];
                 sinon.assert.calledWithMatch(
                     adapter.setObjectNotExistsAsync,
                     expectedObjectCall[0],
                     expectedObjectCall[1],
                 );
-                const expectedStateCall = [`forecast.day${dayIndex}.${dayKey}`, { val: dayMatcher, ack: true }];
+                const expectedStateCall = [`forecast.${dayIndex}d.${dayKey}`, { val: dayMatcher, ack: true }];
                 sinon.assert.calledWithMatch(adapter.setStateAsync, expectedStateCall[0], expectedStateCall[1]);
             });
 
@@ -200,7 +200,7 @@ describe("fetchDataFromURL", () => {
             for (let daytimeIndex = 0; daytimeIndex < expectedDaytimes; daytimeIndex++) {
                 Object.entries(expectedDaytimeKeyMatchers).forEach(([daytimeKey, daytimeMatcher]) => {
                     const expectedObjectCall = [
-                        `forecast.day${dayIndex}.daytime${daytimeIndex}.${daytimeKey}`,
+                        `forecast.${dayIndex}d.${daytimeIndex}dt.${daytimeKey}`,
                         sinon.match.object,
                     ];
                     sinon.assert.calledWithMatch(
@@ -210,12 +210,89 @@ describe("fetchDataFromURL", () => {
                     );
 
                     const expectedStateCall = [
-                        `forecast.day${dayIndex}.daytime${daytimeIndex}.${daytimeKey}`,
+                        `forecast.${dayIndex}d.${daytimeIndex}dt.${daytimeKey}`,
                         { val: daytimeMatcher, ack: true },
                     ];
                     sinon.assert.calledWithMatch(adapter.setStateAsync, expectedStateCall[0], expectedStateCall[1]);
                 });
             }
         }
+    });
+
+    it("should fetch and store at least 25 hourly forecasts", async () => {
+        const berlinHtml = fs.readFileSync(berlinHtmlPath, "utf8");
+        axiosStub.resolves({ data: berlinHtml });
+
+        await fetchDataFromURL(adapter);
+
+        // Filter calls to setObjectNotExistsAsync for forecastHourly
+        const stateCalls = adapter.setStateAsync.getCalls().map((call) => call.args[0]);
+
+        // Use a Set to track which hourKey (0h, 1h, 2h...) we got
+        const hourSet = new Set();
+        stateCalls.forEach((id) => {
+            const match = id.match(/^forecastHourly\.(\d+)h\./);
+            if (match) {
+                hourSet.add(match[1]); // e.g. '0', '1', '2'...
+            }
+        });
+
+        // Expect at least 25 distinct hours
+        expect(hourSet.size).to.be.at.least(25);
+    });
+
+    it("should fetch and store objects: forecastHourly.Xh", async () => {
+        const berlinHtml = fs.readFileSync(berlinHtmlPath, "utf8");
+        axiosStub.resolves({ data: berlinHtml });
+
+        await fetchDataFromURL(adapter);
+
+        const expectedHourKeyMatchers = {
+            apparentTemperature: (val) => typeof val === "number",
+            daySynonym: (val) => typeof val === "string",
+            dayTime: (val) => typeof val === "string",
+            docrootVersion: (val) => typeof val === "string",
+            freshSnowDepth: (val) => typeof val === "number",
+            hour: (val) => typeof val === "number",
+            hourlyPrecipitationAmount: (val) => typeof val === "string",
+            hourlyPrecipitationDuration: (val) => typeof val === "number",
+            precipitationProbability: (val) => typeof val === "number",
+            smog: (val) => typeof val === "number",
+            snowProbability: (val) => typeof val === "number",
+            symbol: (val) => typeof val === "string",
+            symbolText: (val) => typeof val === "string",
+            temperature: (val) => typeof val === "number",
+            thunderstormProbability: (val) => typeof val === "number",
+            tierAppendix: (val) => typeof val === "number",
+            umbrellaState: (val) => typeof val === "string",
+            weatherInfoIndex: (val) => typeof val === "number",
+            windDirection: (val) => typeof val === "string",
+            windDirectionShortSector: (val) => typeof val === "string",
+            windGusts: (val) => typeof val === "number",
+            windGustsKmh: (val) => typeof val === "number",
+            windSpeedBft: (val) => typeof val === "string",
+            windSpeedKmh: (val) => typeof val === "number",
+            windSpeedText: (val) => typeof val === "string",
+            windy: (val) => typeof val === "string",
+            airPressure: (val) => typeof val === "number",
+            humidity: (val) => typeof val === "number",
+        };
+
+        // Store calls
+        const stateCalls = adapter.setStateAsync.getCalls();
+        const forecastHourlyCalls = stateCalls.filter((call) => call.args[0].startsWith("forecastHourly."));
+
+        // Validate each key
+        forecastHourlyCalls.forEach((call) => {
+            const keyMatch = call.args[0].match(/^forecastHourly\.(\d+)h\.(.+)$/);
+            if (keyMatch) {
+                const [, , key] = keyMatch;
+                const value = call.args[1].val;
+
+                if (expectedHourKeyMatchers[key]) {
+                    expect(expectedHourKeyMatchers[key](value)).to.be.true;
+                }
+            }
+        });
     });
 });
