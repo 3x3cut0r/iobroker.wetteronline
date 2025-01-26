@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "wetteronline",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "news": {
+      "1.2.0": {
+        "en": "New: Added forecastHourly channels (0h, 1h, ...)\nRenamed channels to follow a more common naming convention (forecast.0d.0dt.key)\nFix: Delete object tree after URL has changed to clean zombie objects.\nTranslation has been updated to new keys",
+        "de": "Neu: Prognose hinzugefügt Stundenkanäle (0h, 1h, ...)\nUmbenannte Kanäle, um eine häufigere Namenskonvention zu folgen (forecast.0d.0dt.key)\nFix: Objektbaum löschen, nachdem sich die URL in saubere Zombie-Objekte geändert hat.\nÜbersetzung wurde auf neue Schlüssel aktualisiert",
+        "ru": "Новый: Добавленный прогноз Почасовые каналы (0h, 1h, ...)\nПереименованные каналы, чтобы следовать более распространенной конвенции именования (forecast.0d.0dt.key)\nИсправление: Удалить дерево объектов после того, как URL изменился на чистые объекты зомби.\nПеревод был обновлен на новые ключи",
+        "pt": "Novo: Previsão adicionada Canais por hora (0h, 1h, ...)\nCanais renomeados para seguir uma convenção de nomeação mais comum (forecast.0d.0dt.key)\nCorrigir: Excluir árvore de objetos após URL mudou para limpar objetos zumbis.\nTradução foi atualizada para novas chaves",
+        "nl": "Nieuw: Toegevoegde prognose Uurkanalen (0u, 1u, ...)\nGerenameerde kanalen om een meer voorkomende naamgeving conventie te volgen (forecast.0d.0dt.key)\nFix: Objectboom verwijderen nadat URL is veranderd in zombie-objecten reinigen.\nVertaling is bijgewerkt naar nieuwe sleutels",
+        "fr": "Nouveau: Prévisions ajoutées Chaînes horaires (0h, 1h, ...)\nRenommé canaux pour suivre une convention de nommage plus commune (prévu.0d.0dt.key)\nCorrection : Supprimer l'arborescence des objets après que l'URL ait changé pour nettoyer les objets zombies.\nLa traduction a été mise à jour pour les nouvelles clés",
+        "it": "Nuovo: Aggiunto previsioni Canali orari (0h, 1h, ...)\nCanali rinominati per seguire una convenzione di denominazione più comune (forecast.0d.0dt.key)\nFix: Elimina l'albero oggetto dopo l'URL è cambiato per pulire gli oggetti zombie.\nLa traduzione è stata aggiornata a nuove chiavi",
+        "es": "Nuevo: Pronóstico añadido Canales por hora (0h, 1h, ...)\nCanales renombrados para seguir una convención de nominación más común (forecast.0d.0dt.key)\nFijar: Eliminar el árbol de objetos después de URL ha cambiado para limpiar objetos zombis.\nLa traducción ha sido actualizada a nuevas claves",
+        "pl": "Nowy: Dodano prognozę Kanały godzinowe (0h, 1h,...)\nZmienione nazwy kanałów, aby śledzić bardziej powszechne nazewnictwo konwencji (foperast.0d.0dt.key)\nFix: Usuń drzewo obiektu po zmianie adresu URL na czyste obiekty zombie.\nTłumaczenie zostało zaktualizowane do nowych kluczy",
+        "uk": "Новий: Додано прогноз Почасові канали (0h, 1h, ...)\nПерейменовані канали, щоб дотримуватися більш поширених конвенцій проміння (forecast.0d.0dt.key)\nВиправлення: Видалити дерево об'єкта після URL змінилося для очищення об'єктів зомбі.\nПереклад було оновлено до нових ключів",
+        "zh-cn": "新建: 添加预报 小时频道(0小时,1小时,\n重命名频道以遵循更常见的命名惯例( 预告. 0d. 0dt. key)\n修复:在 URL 更改为清洁僵尸对象后删除对象树.\n翻译已更新为新密钥"
+      },
       "1.1.0": {
         "en": "New: Added daytime channels for each forecast.days (Morning, Afternoon, Evening, Night)\nNew: Added daytime.keys (precipitation, windGustsBft, windGustsKmh, windSpeedText, windDirection, windSpeedKmh, windSpeedBft, temperature, temperature_feelslike, windDirectionShortSector)\nUpdate-Interval has been reduced to 25 minutes\nTranslation has been updated to new keys",
         "de": "Neu: Hinzugefügt Tageskanäle für jede Prognose. Tage (Morning, Nachmittag, Abend, Nacht)\nNeu: Tageszeit hinzugefügt. Schlüssel (Vorfreude, WindGustsBft, WindGustsKmh, WindSpeedText, WindSpeedKmh, WindSpeedBft, Temperatur, temperatur_feelslike, WindDirectionShortSector)\nUpdate-Interval wurde auf 25 Minuten reduziert\nÜbersetzung wurde auf neue Schlüssel aktualisiert",
