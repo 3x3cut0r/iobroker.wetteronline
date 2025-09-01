@@ -152,119 +152,107 @@ async function fetchForecastData(adapter, $) {
     let daytimeCounter = 0;
 
     // Loop through each day column in the forecast table
-    $("#forecasttable #weather tbody tr").each(async (index, row) => {
+    const rows = $("#forecasttable #weather tbody tr").toArray();
+    for (const row of rows) {
         const rowType = $(row).attr("class");
 
         // Maximum temperature
         if (rowType === "Maximum Temperature") {
-            $(row)
-                .find("td")
-                .each((dayIndex, cell) => {
-                    const dayKey = `${dayIndex}d`;
-                    if (!forecastData[dayKey]) forecastData[dayKey] = {};
-                    const maxTemp = parseInt($(cell).find(".temp").text().replace("°", "").trim(), 10);
-                    forecastData[dayKey].temperatureMax = isNaN(maxTemp) ? null : maxTemp;
-                });
+            const cells = $(row).find("td").toArray();
+            cells.forEach((cell, dayIndex) => {
+                const dayKey = `${dayIndex}d`;
+                if (!forecastData[dayKey]) forecastData[dayKey] = {};
+                const maxTemp = parseInt($(cell).find(".temp").text().replace("°", "").trim(), 10);
+                forecastData[dayKey].temperatureMax = isNaN(maxTemp) ? null : maxTemp;
+            });
         }
 
         // Minimum temperature
         if (rowType === "Minimum Temperature") {
-            $(row)
-                .find("td")
-                .each((dayIndex, cell) => {
-                    const dayKey = `${dayIndex}d`;
-                    if (!forecastData[dayKey]) forecastData[dayKey] = {};
-                    const minTemp = parseInt($(cell).find(".temp").text().replace("°", "").trim(), 10);
-                    forecastData[dayKey].temperatureMin = isNaN(minTemp) ? null : minTemp;
-                });
+            const cells = $(row).find("td").toArray();
+            cells.forEach((cell, dayIndex) => {
+                const dayKey = `${dayIndex}d`;
+                if (!forecastData[dayKey]) forecastData[dayKey] = {};
+                const minTemp = parseInt($(cell).find(".temp").text().replace("°", "").trim(), 10);
+                forecastData[dayKey].temperatureMin = isNaN(minTemp) ? null : minTemp;
+            });
         }
 
         // Sun hours
         if ($(row).attr("id") === "sun_teaser") {
-            $(row)
-                .find("td span")
-                .each((dayIndex, cell) => {
-                    const dayKey = `${dayIndex}d`;
-                    if (!forecastData[dayKey]) forecastData[dayKey] = {};
-                    const sunTeaser = parseInt($(cell).text().replace("Std.", "").trim(), 10);
-                    forecastData[dayKey].sun = isNaN(sunTeaser) ? null : sunTeaser;
-                });
+            const cells = $(row).find("td span").toArray();
+            cells.forEach((cell, dayIndex) => {
+                const dayKey = `${dayIndex}d`;
+                if (!forecastData[dayKey]) forecastData[dayKey] = {};
+                const sunTeaser = parseInt($(cell).text().replace("Std.", "").trim(), 10);
+                forecastData[dayKey].sun = isNaN(sunTeaser) ? null : sunTeaser;
+            });
         }
 
         // Probability of precipitation
         if ($(row).attr("id") === "precipitation_teaser") {
-            $(row)
-                .find("td span")
-                .each((dayIndex, cell) => {
-                    const dayKey = `${dayIndex}d`;
-                    if (!forecastData[dayKey]) forecastData[dayKey] = {};
-                    const precipitationTeaser = parseInt($(cell).text().replace("%", "").trim(), 10);
-                    forecastData[dayKey].precipitation = isNaN(precipitationTeaser) ? null : precipitationTeaser;
-                });
+            const cells = $(row).find("td span").toArray();
+            cells.forEach((cell, dayIndex) => {
+                const dayKey = `${dayIndex}d`;
+                if (!forecastData[dayKey]) forecastData[dayKey] = {};
+                const precipitationTeaser = parseInt($(cell).text().replace("%", "").trim(), 10);
+                forecastData[dayKey].precipitation = isNaN(precipitationTeaser) ? null : precipitationTeaser;
+            });
         }
 
         // daytime0-3 (Morning, Afternoon, Evening, Night)
         if (rowType === "symbol") {
-            const daytimeIndex = daytimeCounter;
-            daytimeCounter++;
+            const daytimeIndex = daytimeCounter++;
+            const cells = $(row).find("td").toArray();
+            for (const [dayIndex, cell] of cells.entries()) {
+                // Read the data-tt-args attribute
+                const dataAttr = $(cell).attr("data-tt-args");
+                if (!dataAttr) continue;
 
-            $(row)
-                .find("td")
-                .each(async (dayIndex, cell) => {
-                    // Read the data-tt-args attribute
-                    const dataAttr = $(cell).attr("data-tt-args");
-                    if (!dataAttr) return;
+                // Parse the data-tt-args list values
+                const values = decodeHtmlEntities(dataAttr.replace(/\[|\]|"/g, "")).split(",");
 
-                    // Parse the data-tt-args list values
-                    const values = decodeHtmlEntities(dataAttr.replace(/\[|\]|"/g, "")).split(",");
+                // Parse objects
+                const precipitation = convertEmpty(parseInt(values[4], 10)); // Field 4
+                const windGustsBft = convertEmpty(String(values[6])); // Field 6
+                const windGustsKmh = convertEmpty(parseInt(values[7], 10)); // Field 7
+                const windSpeedText = convertEmpty(String(values[13]), true); // Field 13
+                const windDirection = convertEmpty(String(values[14]), true); // Field 14
+                const windSpeedKmh = convertEmpty(parseInt(values[15], 10)); // Field 15
+                const windSpeedBft = convertEmpty(String(values[16])); // Field 16
+                const temperature = convertEmpty(parseInt(values[17], 10), true); // Field 17
+                const temperatureFeelslike = convertEmpty(parseInt(values[18], 10), true); // Field 18
+                const windDirectionShortSector = convertEmpty(String(values[20]), true); // Field 20
 
-                    // Parse objects
-                    const precipitation = convertEmpty(parseInt(values[4], 10)); // Field 4
-                    const windGustsBft = convertEmpty(String(values[6])); // Field 6
-                    const windGustsKmh = convertEmpty(parseInt(values[7], 10)); // Field 7
-                    const windSpeedText = convertEmpty(String(values[13]), true); // Field 13
-                    const windDirection = convertEmpty(String(values[14]), true); // Field 14
-                    const windSpeedKmh = convertEmpty(parseInt(values[15], 10)); // Field 15
-                    const windSpeedBft = convertEmpty(String(values[16])); // Field 16
-                    const temperature = convertEmpty(parseInt(values[17], 10), true); // Field 17
-                    const temperatureFeelslike = convertEmpty(parseInt(values[18], 10), true); // Field 18
-                    const windDirectionShortSector = convertEmpty(String(values[20]), true); // Field 20
+                // Build the day key (0d, 1d, 2d, 3d)
+                const dayKey = `${dayIndex}d`;
+                if (!forecastData[dayKey]) {
+                    forecastData[dayKey] = {};
+                }
 
-                    // Build the day key (0d, 1d, 2d, 3d)
-                    const dayKey = `${dayIndex}d`;
-                    if (!forecastData[dayKey]) {
-                        forecastData[dayKey] = {};
-                    }
+                // Build the daytime keys (0dt, 1dt, 2dt, 3dt)
+                const daytimeKey = `${daytimeIndex}dt`;
+                if (!forecastData[dayKey][daytimeKey]) {
+                    forecastData[dayKey][daytimeKey] = {};
+                }
 
-                    // Build the daytime keys (0dt, 1dt, 2dt, 3dt)
-                    const daytimeKey = `${daytimeIndex}dt`;
-                    if (!forecastData[dayKey][daytimeKey]) {
-                        forecastData[dayKey][daytimeKey] = {};
-                    }
-
-                    // Store the values
-                    forecastData[dayKey][daytimeKey].precipitation = precipitation;
-                    forecastData[dayKey][daytimeKey].windGustsBft = await getTranslation(adapter, String(windGustsBft));
-                    forecastData[dayKey][daytimeKey].windGustsKmh = windGustsKmh;
-                    forecastData[dayKey][daytimeKey].windSpeedText = await getTranslation(
-                        adapter,
-                        String(windSpeedText),
-                    );
-                    forecastData[dayKey][daytimeKey].windDirection = await getTranslation(
-                        adapter,
-                        String(windDirection),
-                    );
-                    forecastData[dayKey][daytimeKey].windSpeedKmh = windSpeedKmh;
-                    forecastData[dayKey][daytimeKey].windSpeedBft = await getTranslation(adapter, String(windSpeedBft));
-                    forecastData[dayKey][daytimeKey].temperature = temperature;
-                    forecastData[dayKey][daytimeKey].temperatureFeelslike = temperatureFeelslike;
-                    forecastData[dayKey][daytimeKey].windDirectionShortSector = await getTranslation(
-                        adapter,
-                        String(windDirectionShortSector),
-                    );
-                });
+                // Store the values
+                forecastData[dayKey][daytimeKey].precipitation = precipitation;
+                forecastData[dayKey][daytimeKey].windGustsBft = await getTranslation(adapter, String(windGustsBft));
+                forecastData[dayKey][daytimeKey].windGustsKmh = windGustsKmh;
+                forecastData[dayKey][daytimeKey].windSpeedText = await getTranslation(adapter, String(windSpeedText));
+                forecastData[dayKey][daytimeKey].windDirection = await getTranslation(adapter, String(windDirection));
+                forecastData[dayKey][daytimeKey].windSpeedKmh = windSpeedKmh;
+                forecastData[dayKey][daytimeKey].windSpeedBft = await getTranslation(adapter, String(windSpeedBft));
+                forecastData[dayKey][daytimeKey].temperature = temperature;
+                forecastData[dayKey][daytimeKey].temperatureFeelslike = temperatureFeelslike;
+                forecastData[dayKey][daytimeKey].windDirectionShortSector = await getTranslation(
+                    adapter,
+                    String(windDirectionShortSector),
+                );
+            }
         }
-    });
+    }
 
     // Store forecast data
     for (const [day, values] of Object.entries(forecastData)) {
