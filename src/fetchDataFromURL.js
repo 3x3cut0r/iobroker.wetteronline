@@ -99,10 +99,18 @@ async function fetchSunrise(adapter, $) {
     // Find and store value
     const sunrise = $("#sunrise-sunset-today #sunrise").text().trim();
 
-    // Create a Date object with today's date and the given time
-    const [hours, minutes] = sunrise.split(":").map(Number);
-    const now = new Date();
-    const value = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes).toISOString();
+    let value = null;
+    if (sunrise && /^\d{1,2}:\d{2}$/.test(sunrise)) {
+        const [hours, minutes] = sunrise.split(":").map((v) => parseInt(v, 10));
+        if (!isNaN(hours) && !isNaN(minutes)) {
+            const now = new Date();
+            value = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes).toISOString();
+        } else {
+            adapter.log.warn(`Invalid sunrise time received: ${sunrise}`);
+        }
+    } else if (sunrise) {
+        adapter.log.warn(`Invalid sunrise time received: ${sunrise}`);
+    }
 
     // Define object options
     const options = {
@@ -124,10 +132,18 @@ async function fetchSunset(adapter, $) {
     // Find and store value
     const sunset = $("#sunrise-sunset-today #sunset").text().trim();
 
-    // Create a Date object with today's date and the given time
-    const [hours, minutes] = sunset.split(":").map(Number);
-    const now = new Date();
-    const value = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes).toISOString();
+    let value = null;
+    if (sunset && /^\d{1,2}:\d{2}$/.test(sunset)) {
+        const [hours, minutes] = sunset.split(":").map((v) => parseInt(v, 10));
+        if (!isNaN(hours) && !isNaN(minutes)) {
+            const now = new Date();
+            value = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes).toISOString();
+        } else {
+            adapter.log.warn(`Invalid sunset time received: ${sunset}`);
+        }
+    } else if (sunset) {
+        adapter.log.warn(`Invalid sunset time received: ${sunset}`);
+    }
 
     // Define object options
     const options = {
