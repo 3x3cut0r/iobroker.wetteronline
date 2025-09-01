@@ -115,7 +115,7 @@ class Wetteronline extends utils.Adapter {
             }
 
             callback();
-        } catch (e) {
+        } catch (_e) {
             callback();
         }
     }
