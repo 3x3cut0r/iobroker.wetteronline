@@ -1,6 +1,10 @@
 # run dev-server
 
-dev-server run default
+The dev-server needs a profile. Run setup once to create the default profile and avoid "Profile default doesn't exist":
+
+dev-server setup
+
+dev-server run
 dev-server update
 dev-server upload
 
