@@ -102,9 +102,20 @@ async function fetchSunrise(adapter, $) {
     let value = null;
     if (sunrise && /^\d{1,2}:\d{2}$/.test(sunrise)) {
         const [hours, minutes] = sunrise.split(":").map((v) => parseInt(v, 10));
-        if (!isNaN(hours) && !isNaN(minutes)) {
+        if (
+            !isNaN(hours) &&
+            !isNaN(minutes) &&
+            hours >= 0 &&
+            hours < 24 &&
+            minutes >= 0 &&
+            minutes < 60
+        ) {
             const now = new Date();
-            value = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes).toISOString();
+            try {
+                value = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes).toISOString();
+            } catch {
+                adapter.log.warn(`Invalid sunrise time received: ${sunrise}`);
+            }
         } else {
             adapter.log.warn(`Invalid sunrise time received: ${sunrise}`);
         }
@@ -135,9 +146,20 @@ async function fetchSunset(adapter, $) {
     let value = null;
     if (sunset && /^\d{1,2}:\d{2}$/.test(sunset)) {
         const [hours, minutes] = sunset.split(":").map((v) => parseInt(v, 10));
-        if (!isNaN(hours) && !isNaN(minutes)) {
+        if (
+            !isNaN(hours) &&
+            !isNaN(minutes) &&
+            hours >= 0 &&
+            hours < 24 &&
+            minutes >= 0 &&
+            minutes < 60
+        ) {
             const now = new Date();
-            value = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes).toISOString();
+            try {
+                value = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes).toISOString();
+            } catch {
+                adapter.log.warn(`Invalid sunset time received: ${sunset}`);
+            }
         } else {
             adapter.log.warn(`Invalid sunset time received: ${sunset}`);
         }
