@@ -1,4 +1,7 @@
-![Logo](../admin/wetteronline.png)
+---
+---
+
+![Logo](wetteronline.png)
 
 # ioBroker.wetteronline
 
