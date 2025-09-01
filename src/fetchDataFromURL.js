@@ -12,7 +12,16 @@ const { getTranslation } = require("./getTranslation");
  * @returns {Promise<string>} - A promise that resolves with the HTML content of the page.
  */
 async function fetchWebPage(url) {
-    const response = await axios.get(url);
+    const response = await axios.get(url, {
+        headers: {
+            "User-Agent":
+                "Mozilla/5.0 (compatible; ioBroker.wetteronline; +https://github.com/3x3cut0r/ioBroker.wetteronline)",
+            Accept:
+                "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "Accept-Language": "de-DE,de;q=0.9,en;q=0.8",
+            Referer: "https://www.wetteronline.de/",
+        },
+    });
     return response.data;
 }
 
