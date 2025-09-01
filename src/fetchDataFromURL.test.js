@@ -156,6 +156,31 @@ describe("fetchDataFromURL", () => {
         });
     });
 
+    it("should handle invalid sunrise and sunset times gracefully", async () => {
+        const invalidHtml = `
+            <html>
+                <head><title>Wetter Berlin</title></head>
+                <body>
+                    <div id="nowcast-card-headline">Wetter Berlin</div>
+                    <div id="nowcast-card-temperature"><span class="value">15</span></div>
+                    <div id="sunrise-sunset-today">
+                        <span id="sunrise">25:61</span>
+                        <span id="sunset">ab:cd</span>
+                    </div>
+                    <div id="forecasttable"><div id="weather"><tbody></tbody></div></div>
+                    <div id="hourly-container"></div>
+                </body>
+            </html>`;
+        axiosStub.resolves({ data: invalidHtml });
+
+        await fetchDataFromURL(adapter);
+
+        sinon.assert.calledWith(adapter.log.warn, sinon.match(/Invalid sunrise time received/));
+        sinon.assert.calledWith(adapter.log.warn, sinon.match(/Invalid sunset time received/));
+        sinon.assert.calledWith(adapter.setStateAsync, "forecast.current.sunrise", { val: null, ack: true });
+        sinon.assert.calledWith(adapter.setStateAsync, "forecast.current.sunset", { val: null, ack: true });
+    });
+
     it("should fetch and store objects: forecast.Xd.Ydt", async () => {
         const berlinHtml = fs.readFileSync(berlinHtmlPath, "utf8");
         axiosStub.resolves({ data: berlinHtml });
