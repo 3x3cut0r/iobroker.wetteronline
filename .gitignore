@@ -5,7 +5,6 @@
 .chatgpt/prompt.txt
 .dev/
 .dev-server/
-README-DEV.md
 
 ### Android ###
 # Gradle files
