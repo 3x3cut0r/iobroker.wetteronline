@@ -91,17 +91,15 @@ async function fetchTemperature(adapter, $) {
 }
 
 /**
- * Extracts the sunrise time from the HTML content.
+ * Convert a HH:MM time string to an ISO timestamp for today.
  * @param adapter - The ioBroker adapter instance
- * @param $ - The loaded Cheerio object.
+ * @param {string} timeString - Time in HH:MM format
+ * @param {string} label - Label for warning messages
+ * @returns {string|null} ISO timestamp or null if invalid
  */
-async function fetchSunrise(adapter, $) {
-    // Find and store value
-    const sunrise = $("#sunrise-sunset-today #sunrise").text().trim();
-
-    let value = null;
-    if (sunrise && /^\d{1,2}:\d{2}$/.test(sunrise)) {
-        const [hours, minutes] = sunrise.split(":").map((v) => parseInt(v, 10));
+function parseTimeToISO(adapter, timeString, label) {
+    if (timeString && /^\d{1,2}:\d{2}$/.test(timeString)) {
+        const [hours, minutes] = timeString.split(":").map((v) => parseInt(v, 10));
         if (
             !isNaN(hours) &&
             !isNaN(minutes) &&
@@ -111,17 +109,27 @@ async function fetchSunrise(adapter, $) {
             minutes < 60
         ) {
             const now = new Date();
-            try {
-                value = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes).toISOString();
-            } catch {
-                adapter.log.warn(`Invalid sunrise time received: ${sunrise}`);
+            const date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
+            if (!isNaN(date.getTime())) {
+                return date.toISOString();
             }
-        } else {
-            adapter.log.warn(`Invalid sunrise time received: ${sunrise}`);
         }
-    } else if (sunrise) {
-        adapter.log.warn(`Invalid sunrise time received: ${sunrise}`);
+        adapter.log.warn(`Invalid ${label} time received: ${timeString}`);
+    } else if (timeString) {
+        adapter.log.warn(`Invalid ${label} time received: ${timeString}`);
     }
+    return null;
+}
+
+/**
+ * Extracts the sunrise time from the HTML content.
+ * @param adapter - The ioBroker adapter instance
+ * @param $ - The loaded Cheerio object.
+ */
+async function fetchSunrise(adapter, $) {
+    // Find and store value
+    const sunrise = $("#sunrise-sunset-today #sunrise").text().trim();
+    const value = parseTimeToISO(adapter, sunrise, "sunrise");
 
     // Define object options
     const options = {
@@ -142,30 +150,7 @@ async function fetchSunrise(adapter, $) {
 async function fetchSunset(adapter, $) {
     // Find and store value
     const sunset = $("#sunrise-sunset-today #sunset").text().trim();
-
-    let value = null;
-    if (sunset && /^\d{1,2}:\d{2}$/.test(sunset)) {
-        const [hours, minutes] = sunset.split(":").map((v) => parseInt(v, 10));
-        if (
-            !isNaN(hours) &&
-            !isNaN(minutes) &&
-            hours >= 0 &&
-            hours < 24 &&
-            minutes >= 0 &&
-            minutes < 60
-        ) {
-            const now = new Date();
-            try {
-                value = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes).toISOString();
-            } catch {
-                adapter.log.warn(`Invalid sunset time received: ${sunset}`);
-            }
-        } else {
-            adapter.log.warn(`Invalid sunset time received: ${sunset}`);
-        }
-    } else if (sunset) {
-        adapter.log.warn(`Invalid sunset time received: ${sunset}`);
-    }
+    const value = parseTimeToISO(adapter, sunset, "sunset");
 
     // Define object options
     const options = {
