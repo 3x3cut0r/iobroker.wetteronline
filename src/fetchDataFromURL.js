@@ -98,26 +98,35 @@ async function fetchTemperature(adapter, $) {
  * @returns {string|null} ISO timestamp or null if invalid
  */
 function parseTimeToISO(adapter, timeString, label) {
-    if (timeString && /^\d{1,2}:\d{2}$/.test(timeString)) {
-        const [hours, minutes] = timeString.split(":").map((v) => parseInt(v, 10));
+    if (!timeString) {
+        return null;
+    }
+
+    const match = timeString.match(/^(\d{1,2}):(\d{2})$/);
+    if (match) {
+        const hours = parseInt(match[1], 10);
+        const minutes = parseInt(match[2], 10);
+
         if (
-            !isNaN(hours) &&
-            !isNaN(minutes) &&
+            Number.isInteger(hours) &&
+            Number.isInteger(minutes) &&
             hours >= 0 &&
             hours < 24 &&
             minutes >= 0 &&
             minutes < 60
         ) {
             const now = new Date();
-            const date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
-            if (!isNaN(date.getTime())) {
+
+            try {
+                const date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
                 return date.toISOString();
+            } catch (_error) {
+                // ignore and fall through to warning below
             }
         }
-        adapter.log.warn(`Invalid ${label} time received: ${timeString}`);
-    } else if (timeString) {
-        adapter.log.warn(`Invalid ${label} time received: ${timeString}`);
     }
+
+    adapter.log.warn(`Invalid ${label} time received: ${timeString}`);
     return null;
 }
 
@@ -128,7 +137,7 @@ function parseTimeToISO(adapter, timeString, label) {
  */
 async function fetchSunrise(adapter, $) {
     // Find and store value
-    const sunrise = $("#sunrise-sunset-today #sunrise").text().trim();
+    const sunrise = $("#sunrise-sunset-today #sunrise").text().trim().split(" ")[0];
     const value = parseTimeToISO(adapter, sunrise, "sunrise");
 
     // Define object options
@@ -149,7 +158,7 @@ async function fetchSunrise(adapter, $) {
  */
 async function fetchSunset(adapter, $) {
     // Find and store value
-    const sunset = $("#sunrise-sunset-today #sunset").text().trim();
+    const sunset = $("#sunrise-sunset-today #sunset").text().trim().split(" ")[0];
     const value = parseTimeToISO(adapter, sunset, "sunset");
 
     // Define object options
@@ -635,4 +644,5 @@ async function fetchDataFromURL(adapter) {
 module.exports = {
     checkURL,
     fetchDataFromURL,
+    parseTimeToISO,
 };
