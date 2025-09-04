@@ -185,10 +185,10 @@ async function fetchForecastData(adapter, $) {
     // Loop through each day column in the forecast table
     const rows = $("#forecasttable #weather tbody tr").toArray();
     for (const row of rows) {
-        const rowType = $(row).attr("class");
+        const rowClasses = $(row).attr("class")?.split(/\s+/) || [];
 
         // Maximum temperature
-        if (rowType === "Maximum Temperature") {
+        if (rowClasses.includes("Maximum") && rowClasses.includes("Temperature")) {
             const cells = $(row).find("td").toArray();
             cells.forEach((cell, dayIndex) => {
                 const dayKey = `${dayIndex}d`;
@@ -199,7 +199,7 @@ async function fetchForecastData(adapter, $) {
         }
 
         // Minimum temperature
-        if (rowType === "Minimum Temperature") {
+        if (rowClasses.includes("Minimum") && rowClasses.includes("Temperature")) {
             const cells = $(row).find("td").toArray();
             cells.forEach((cell, dayIndex) => {
                 const dayKey = `${dayIndex}d`;
@@ -232,7 +232,7 @@ async function fetchForecastData(adapter, $) {
         }
 
         // daytime0-3 (Morning, Afternoon, Evening, Night)
-        if (rowType === "symbol") {
+        if (rowClasses.includes("symbol")) {
             const daytimeIndex = daytimeCounter++;
             const cells = $(row).find("td").toArray();
             for (const [dayIndex, cell] of cells.entries()) {
