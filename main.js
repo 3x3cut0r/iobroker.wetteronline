@@ -5,6 +5,10 @@ const { deleteAdapterObjects } = require("./src/deleteObject");
 const { fetchDataFromURL } = require("./src/fetchDataFromURL");
 
 class Wetteronline extends utils.Adapter {
+    /** @type {NodeJS.Timeout | undefined} */
+    interval;
+    /** @type {NodeJS.Timeout | undefined} */
+    timeout;
     /**
      * @param {Partial<utils.AdapterOptions>} [options={}]
      */
@@ -58,7 +62,7 @@ class Wetteronline extends utils.Adapter {
      * Start the periodic execution of data fetching.
      * @param {number} interval - The interval in milliseconds.
      */
-    async startPeriodicExecution(interval) {
+    startPeriodicExecution(interval) {
         // Execute periodically
         this.interval = setInterval(async () => {
             try {
