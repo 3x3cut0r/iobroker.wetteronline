@@ -57,10 +57,24 @@ function decodeHtmlEntities(htmlString) {
  * @param $ - The loaded Cheerio object.
  */
 async function fetchCity(adapter, $) {
-    // Find and store value
-    const headline = $("#nowcast-card-headline").text().trim();
-    const cityMatch = headline.match(/Wetter\s+(.*)/i); // Matches "Wetter [City]"
-    const value = cityMatch ? cityMatch[1].trim() : null;
+    // Try to determine the city from different locations
+    let value = null;
+
+    // Newer pages expose the city inside the OpenGraph title
+    const ogTitle = $('meta[property="og:title"]').attr("content");
+    if (ogTitle) {
+        const match = ogTitle.match(/Wetter\s+(.*?)(?:\s+-|$)/i);
+        if (match) {
+            value = match[1].trim();
+        }
+    }
+
+    // Fallback: use the first headline that starts with "Wetter"
+    if (!value) {
+        const headline = $("h1").first().text().trim() || $("#nowcast-card-headline").text().trim();
+        const cityMatch = headline.match(/Wetter\s+(.*)/i);
+        value = cityMatch ? cityMatch[1].trim() : null;
+    }
 
     // Create the object
     await createOrUpdateObject(adapter, "city", value);
@@ -73,8 +87,16 @@ async function fetchCity(adapter, $) {
  */
 async function fetchTemperature(adapter, $) {
     // Find and store value
-    const tempText = $("#nowcast-card-temperature .value").text().trim();
-    const temperature = parseInt(tempText, 10);
+    let tempText = $("[data-meta='current-temperature']").first().text().trim();
+    if (!tempText) {
+        tempText = $("#nowcast-card-temperature .value").text().trim();
+    }
+    if (!tempText) {
+        tempText = $('[class*="temperature"]').first().text().trim();
+    }
+
+    const match = tempText.match(/-?\d+/);
+    const temperature = match ? parseInt(match[0], 10) : NaN;
     const value = isNaN(temperature) ? null : temperature;
 
     // Define object options
@@ -137,7 +159,13 @@ function parseTimeToISO(adapter, timeString, label) {
  */
 async function fetchSunrise(adapter, $) {
     // Find and store value
-    const sunrise = $("#sunrise-sunset-today #sunrise").text().trim().split(" ")[0];
+    let sunrise =
+        $("[data-meta='sunrise-time']").first().text().trim() ||
+        $("[data-meta='sunrise']").first().text().trim() ||
+        $("#sunrise-sunset-today #sunrise").text().trim() ||
+        $("[id*='sunrise']").first().text().trim() ||
+        $("[class*='sunrise']").first().text().trim();
+    sunrise = sunrise.split(" ")[0];
     const value = parseTimeToISO(adapter, sunrise, "sunrise");
 
     // Define object options
@@ -158,7 +186,13 @@ async function fetchSunrise(adapter, $) {
  */
 async function fetchSunset(adapter, $) {
     // Find and store value
-    const sunset = $("#sunrise-sunset-today #sunset").text().trim().split(" ")[0];
+    let sunset =
+        $("[data-meta='sunset-time']").first().text().trim() ||
+        $("[data-meta='sunset']").first().text().trim() ||
+        $("#sunrise-sunset-today #sunset").text().trim() ||
+        $("[id*='sunset']").first().text().trim() ||
+        $("[class*='sunset']").first().text().trim();
+    sunset = sunset.split(" ")[0];
     const value = parseTimeToISO(adapter, sunset, "sunset");
 
     // Define object options
@@ -624,9 +658,15 @@ async function fetchDataFromURL(adapter) {
         // Load the HTML content into cheerio for parsing
         const $ = cheerio.load(html);
 
-        // Check if the title indicates a "not found" page
+        // Check if the page indicates a "not found" message
         const title = $("title").text().trim();
-        if (title === "Seite nicht gefunden - wetteronline.de") {
+        const bodyText = $("body").text();
+        const notFound =
+            title === "Seite nicht gefunden - wetteronline.de" ||
+            bodyText.includes("Die angeforderte Seite kann nicht angezeigt werden") ||
+            bodyText.includes("The requested page cannot be displayed");
+
+        if (notFound) {
             adapter.log.error("URL is not valid. The specified city does not exist.");
             return;
         }

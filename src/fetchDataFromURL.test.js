@@ -106,7 +106,7 @@ describe("fetchDataFromURL", () => {
         }
     });
 
-    it("should log an error if the page title indicates a 404", async () => {
+    it("should log an error if the page indicates a 404", async () => {
         const notFoundHtml = fs.readFileSync(notFoundHtmlPath, "utf8");
         axiosStub.resolves({ data: notFoundHtml });
 
