@@ -2,11 +2,19 @@
 
 The dev-server needs a profile. Run setup once to create the default profile and avoid "Profile default doesn't exist":
 
+```bash
+# setup
 dev-server setup
 
+# run
 dev-server run
-dev-server update
+
+# upload after changes
 dev-server upload
+
+# update
+dev-server update
+```
 
 # test
 
