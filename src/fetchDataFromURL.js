@@ -189,11 +189,13 @@ async function fetchSunset(adapter, $) {
     let sunset =
         $("[data-meta='sunset-time']").first().text().trim() ||
         $("[data-meta='sunset']").first().text().trim() ||
+        $("meta[itemprop='sunset']").attr("content")?.trim() ||
         $("#sunrise-sunset-today #sunset").text().trim() ||
         $("[id*='sunset']").first().text().trim() ||
         $("[class*='sunset']").first().text().trim();
-    sunset = sunset.split(" ")[0];
-    const value = parseTimeToISO(adapter, sunset, "sunset");
+
+    const match = sunset.match(/\b\d{1,2}:\d{2}\b/);
+    const value = parseTimeToISO(adapter, match ? match[0] : null, "sunset");
 
     // Define object options
     const options = {
