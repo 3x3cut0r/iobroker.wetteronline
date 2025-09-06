@@ -190,6 +190,7 @@ async function fetchSunset(adapter, $) {
     let sunset =
         $("[data-meta='sunset-time']").first().text().trim() ||
         $("[data-meta='sunset']").first().text().trim() ||
+        $("meta[itemprop='sunset']").attr("content")?.trim() ||
         $("#sunrise-sunset-today #sunset").text().trim() ||
         $("[id*='sunset']").first().text().trim() ||
         $("[class*='sunset']").first().text().trim();
