@@ -2,8 +2,6 @@
 
 const { expect } = require("chai");
 const sinon = require("sinon");
-const fs = require("fs");
-const path = require("path");
 const axios = require("axios");
 const { checkURL, fetchDataFromURL } = require("../src/fetchDataFromURL");
 
@@ -24,15 +22,29 @@ function getMockAdapter() {
     };
 }
 
-describe("fetchDataFromURL", () => {
+describe("fetchDataFromURL", function () {
+    this.timeout(20000);
+
     let adapter;
-    let axiosStub;
-    const berlinHtmlPath = path.join(__dirname, "../test/berlin.html");
-    const notFoundHtmlPath = path.join(__dirname, "../test/404.html");
+    let liveHtml;
+
+    before(async () => {
+        const response = await axios.get("https://www.wetteronline.de/wetter/berlin", {
+            headers: {
+                "User-Agent":
+                    "Mozilla/5.0 (compatible; ioBroker.wetteronline; +https://github.com/3x3cut0r/ioBroker.wetteronline)",
+                Accept:
+                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+                "Accept-Language": "de-DE,de;q=0.9,en;q=0.8",
+                Referer: "https://www.wetteronline.de/",
+            },
+        });
+        liveHtml = response.data;
+    });
 
     beforeEach(() => {
         adapter = getMockAdapter();
-        axiosStub = sinon.stub(axios, "get");
+        sinon.stub(axios, "get").resolves({ data: liveHtml });
     });
 
     afterEach(() => {
@@ -107,8 +119,8 @@ describe("fetchDataFromURL", () => {
     });
 
     it("should log an error if the page indicates a 404", async () => {
-        const notFoundHtml = fs.readFileSync(notFoundHtmlPath, "utf8");
-        axiosStub.resolves({ data: notFoundHtml });
+        axios.get.restore();
+        adapter.config.url = "https://www.wetteronline.de/wetter/this-city-does-not-exist";
 
         await fetchDataFromURL(adapter);
 
@@ -116,9 +128,6 @@ describe("fetchDataFromURL", () => {
     });
 
     it("should fetch and store objects: url, city", async () => {
-        const berlinHtml = fs.readFileSync(berlinHtmlPath, "utf8");
-        axiosStub.resolves({ data: berlinHtml });
-
         await fetchDataFromURL(adapter);
 
         const expectedKeys = {
@@ -136,9 +145,6 @@ describe("fetchDataFromURL", () => {
     });
 
     it("should fetch and store objects: forecast.current", async () => {
-        const berlinHtml = fs.readFileSync(berlinHtmlPath, "utf8");
-        axiosStub.resolves({ data: berlinHtml });
-
         await fetchDataFromURL(adapter);
 
         const expectedKeys = {
@@ -171,7 +177,8 @@ describe("fetchDataFromURL", () => {
                     <div id="hourly-container"></div>
                 </body>
             </html>`;
-        axiosStub.resolves({ data: invalidHtml });
+        axios.get.restore();
+        sinon.stub(axios, "get").resolves({ data: invalidHtml });
 
         await fetchDataFromURL(adapter);
 
@@ -182,9 +189,6 @@ describe("fetchDataFromURL", () => {
     });
 
     it("should fetch and store objects: forecast.Xd.Ydt", async () => {
-        const berlinHtml = fs.readFileSync(berlinHtmlPath, "utf8");
-        axiosStub.resolves({ data: berlinHtml });
-
         await fetchDataFromURL(adapter);
 
         const expectedDayKeyMatchers = {
@@ -245,9 +249,6 @@ describe("fetchDataFromURL", () => {
     });
 
     it("should fetch and store at least 25 hourly forecasts", async () => {
-        const berlinHtml = fs.readFileSync(berlinHtmlPath, "utf8");
-        axiosStub.resolves({ data: berlinHtml });
-
         await fetchDataFromURL(adapter);
 
         // Filter calls to setObjectNotExistsAsync for forecastHourly
@@ -267,9 +268,6 @@ describe("fetchDataFromURL", () => {
     });
 
     it("should fetch and store objects: forecastHourly.Xh", async () => {
-        const berlinHtml = fs.readFileSync(berlinHtmlPath, "utf8");
-        axiosStub.resolves({ data: berlinHtml });
-
         await fetchDataFromURL(adapter);
 
         const expectedHourKeyMatchers = {
