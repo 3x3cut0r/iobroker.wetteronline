@@ -3,6 +3,8 @@
 const { expect } = require("chai");
 const sinon = require("sinon");
 const axios = require("axios");
+const fs = require("fs");
+const path = require("path");
 const { checkURL, fetchDataFromURL } = require("../src/fetchDataFromURL");
 
 // Mock adapter instance
@@ -28,18 +30,8 @@ describe("fetchDataFromURL", function () {
     let adapter;
     let liveHtml;
 
-    before(async () => {
-        const response = await axios.get("https://www.wetteronline.de/wetter/berlin", {
-            headers: {
-                "User-Agent":
-                    "Mozilla/5.0 (compatible; ioBroker.wetteronline; +https://github.com/3x3cut0r/ioBroker.wetteronline)",
-                Accept:
-                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-                "Accept-Language": "de-DE,de;q=0.9,en;q=0.8",
-                Referer: "https://www.wetteronline.de/",
-            },
-        });
-        liveHtml = response.data;
+    before(() => {
+        liveHtml = fs.readFileSync(path.join(__dirname, "..", "test", "fixtures", "sample.html"), "utf8");
     });
 
     beforeEach(() => {
@@ -120,11 +112,23 @@ describe("fetchDataFromURL", function () {
 
     it("should log an error if the page indicates a 404", async () => {
         axios.get.restore();
+        sinon
+            .stub(axios, "get")
+            .resolves({
+                data: fs.readFileSync(
+                    path.join(__dirname, "..", "test", "fixtures", "404.html"),
+                    "utf8",
+                ),
+            });
+
         adapter.config.url = "https://www.wetteronline.de/wetter/this-city-does-not-exist";
 
         await fetchDataFromURL(adapter);
 
-        sinon.assert.calledWith(adapter.log.error, sinon.match(/URL is not valid/));
+        sinon.assert.calledWith(
+            adapter.log.error,
+            sinon.match("URL is not valid. The specified city does not exist."),
+        );
     });
 
     it("should fetch and store objects: url, city", async () => {
