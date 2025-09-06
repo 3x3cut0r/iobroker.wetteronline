@@ -165,7 +165,8 @@ async function fetchSunrise(adapter, $) {
         $("#sunrise-sunset-today #sunrise").text().trim() ||
         $("[id*='sunrise']").first().text().trim() ||
         $("[class*='sunrise']").first().text().trim();
-    sunrise = sunrise.split(" ")[0];
+    const sunriseMatch = sunrise.match(/(\d{1,2}:\d{2})/);
+    sunrise = sunriseMatch ? sunriseMatch[1] : sunrise;
     const value = parseTimeToISO(adapter, sunrise, "sunrise");
 
     // Define object options
@@ -192,7 +193,8 @@ async function fetchSunset(adapter, $) {
         $("#sunrise-sunset-today #sunset").text().trim() ||
         $("[id*='sunset']").first().text().trim() ||
         $("[class*='sunset']").first().text().trim();
-    sunset = sunset.split(" ")[0];
+    const sunsetMatch = sunset.match(/(\d{1,2}:\d{2})/);
+    sunset = sunsetMatch ? sunsetMatch[1] : sunset;
     const value = parseTimeToISO(adapter, sunset, "sunset");
 
     // Define object options
